@@ -427,8 +427,8 @@ a {
 }
 
 /* --------------------------------------------------------------- promo bar */
-/* Figma 2154:625 (current): full-width white bar, 8px/16px padding, 16px gap, orange bell icon (24px) and text
-   Sometype Mono 12px, black, letter-spacing -0.24px (first sentence SemiBold 12/16, second Regular 12/20); 40px high.
+/* Figma 2154:625 (current): full-width white bar, 8px/16px padding, 16px gap, orange bell icon (20px) and text
+   Sometype Mono 12px, black, letter-spacing -0.24px (first sentence SemiBold 12/16, second Regular 12/20); 36px high.
    A fixed overlay: it never takes part in the layout (no CLS) and never catches the pointer. */
 .promo {
   position: fixed;
@@ -441,7 +441,7 @@ a {
   justify-content: center;
   gap: 16px;
   box-sizing: border-box;
-  min-height: 40px;
+  min-height: 36px;
   padding: 8px 16px;
   background: var(--white);
   color: var(--black);
@@ -468,8 +468,8 @@ a {
 }
 .promo__icon {
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 .promo strong {
   font-weight: 600;
