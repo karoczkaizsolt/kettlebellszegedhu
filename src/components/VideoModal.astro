@@ -1,0 +1,28 @@
+---
+import { getImage } from 'astro:assets';
+import poster from '../assets/figma/video-poster.png';
+import iconClose from '../assets/figma/icon-close.svg';
+import iconCloseHover from '../assets/figma/icon-close-hover.svg';
+import { videoSrc } from '../config';
+
+const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, quality: 80 });
+---
+
+<!-- Figma 2148:396 (desktop) / 2154:576 (mobile). Layout only in milestone 02; behaviour comes in 03. -->
+<dialog id="video-modal" class="modal" aria-label="Bemutatkozó videó" data-video-modal>
+  <div class="modal__inner">
+    <figure class="modal__figure">
+      <div class="modal__video">
+        <video controls playsinline preload="none" poster={posterImage.src} data-video>
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+        <div class="modal__vignette" aria-hidden="true"></div>
+      </div>
+      <figcaption class="modal__caption">Bemutatkozó videó / Kettlebell Szeged 2019</figcaption>
+    </figure>
+    <button type="button" class="close-btn" aria-label="Bezárás" data-video-close>
+      <img class="icon-default" src={iconClose.src} width="20" height="20" alt="" />
+      <img class="icon-hover" src={iconCloseHover.src} width="20" height="20" alt="" />
+    </button>
+  </div>
+</dialog>

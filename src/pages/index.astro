@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import PromoBar from '../components/PromoBar.astro';
+import SplineScene from '../components/SplineScene.astro';
+import Hero from '../components/Hero.astro';
+import Tags from '../components/Tags.astro';
+import InfoBanner from '../components/InfoBanner.astro';
+import VideoTab from '../components/VideoTab.astro';
+import Credit from '../components/Credit.astro';
+import VideoModal from '../components/VideoModal.astro';
+---
+
+<Base
+  title="Kettlebell edzés Szegeden – Varga Tamás, SFG instruktor"
+  description="SFG Kettlebell személyi és csoportos edzések Szegeden 2008 óta. Tanuld meg helyesen használni a kettlebellt, építs funkcionális erőt, és fejlődj biztonságosan."
+>
+  <PromoBar />
+  <main class="stage" data-stage>
+    <SplineScene />
+    <Hero />
+    <Tags />
+    <InfoBanner />
+    <Credit />
+  </main>
+  <VideoTab />
+  <VideoModal />
+</Base>

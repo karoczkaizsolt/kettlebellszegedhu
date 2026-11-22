@@ -1,0 +1,750 @@
+/* Global styles and layout. Mobile first; the desktop layout starts at 960px.
+   Figma reference sizes: desktop frame 1280×834, mobile frame 393×872. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--page-bg);
+  color: var(--light-gray);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  transition: background-color var(--t) var(--ease);
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 16px;
+  letter-spacing: -0.02em;
+  background: transparent;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+p,
+h1,
+ul {
+  margin: 0;
+}
+ul {
+  padding: 0;
+  list-style: none;
+}
+img {
+  display: block;
+}
+button {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--light-gray);
+  outline-offset: 2px;
+}
+:root[data-state='active'] :focus-visible {
+  outline-color: var(--black);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Line breaks that only exist on one layout */
+.br-mobile {
+  display: inline;
+}
+.br-desktop {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ stage */
+.stage {
+  position: relative;
+  min-height: max(100svh, 872px);
+  overflow: hidden;
+  background: var(--page-bg);
+  transition: background-color var(--t) var(--ease);
+}
+/* CSS page background: dark by default, warm orange in the active state (Figma "sample bg 1/2" were placeholders). */
+:root[data-state='active'] .stage {
+  background: linear-gradient(180deg, #22190c 0%, #5a3b14 42%, var(--brown) 100%);
+}
+
+.scene {
+  position: absolute;
+  z-index: 0;
+  /* Full-bleed: the scene (v3) is framed by its own camera, so the canvas simply fills the stage and its
+     own backdrop covers the whole area. The scene scales with the canvas height. */
+  inset: 0;
+}
+.scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+.scene[data-scene-state='ready'] canvas {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------- hero */
+.hero {
+  position: absolute;
+  z-index: 1;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(288px, calc(100% - 32px));
+  pointer-events: none;
+}
+
+.hero__title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-align: center;
+  text-transform: none;
+}
+
+.hero__eyebrow {
+  display: block;
+  width: min-content;
+  min-width: 100%;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.02em;
+  color: var(--eyebrow-color);
+  transition: color var(--t) var(--ease);
+}
+
+.hero__headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hero__line {
+  display: block;
+}
+
+/* The first line is filled with the image texture exported from Figma (`statement`). */
+.hero__line--textured {
+  margin-bottom: -18px;
+  line-height: 34px;
+  color: transparent;
+  background-image: url('../assets/figma/headline-texture-mobile.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+/* active state: the same texture with a 30% #805318 overlay (Figma gradient layer) */
+:root[data-state='active'] .hero__line--textured {
+  background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
+    url('../assets/figma/headline-texture-mobile.png');
+  background-size: auto auto, cover;
+  background-position: top left, center;
+  background-repeat: repeat, no-repeat;
+}
+
+.hero__line--accent {
+  line-height: 48px;
+  color: var(--headline-accent);
+  transition: color var(--t) var(--ease);
+}
+
+.logo {
+  flex: none;
+  width: 101px;
+  height: 20px;
+  background-color: var(--eyebrow-color);
+  -webkit-mask: url('/img/strongfirst-logo.svg') center / 100% 100% no-repeat;
+  mask: url('/img/strongfirst-logo.svg') center / 100% 100% no-repeat;
+  transition: background-color var(--t) var(--ease);
+}
+
+/* ------------------------------------------------------------------- tags */
+.tags {
+  position: absolute;
+  z-index: 1;
+  top: 274px;
+  right: 32px;
+  width: 178px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  opacity: var(--tags-opacity);
+  visibility: var(--tags-visibility);
+  transition: opacity var(--t) var(--ease), visibility 0s linear var(--t);
+  pointer-events: none;
+}
+:root[data-state='active'] .tags {
+  transition: opacity var(--t) var(--ease), visibility 0s;
+}
+.tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--light-gray-20);
+  font-style: italic;
+  font-size: 12px;
+  line-height: 14px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--light-gray);
+}
+
+/* ------------------------------------------------------------ info banner */
+.banner {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 54px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(330px, calc(100% - 32px));
+  padding: 8px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: var(--panel-bg);
+  color: var(--panel-text);
+  transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease),
+    color var(--t) var(--ease), transform var(--t) var(--ease);
+}
+
+.banner__profile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+.banner__person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.banner__avatar {
+  flex: none;
+  width: 88px;
+  height: 88px;
+  border-radius: 4px;
+  object-fit: cover;
+  object-position: bottom;
+}
+.banner__details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: max-content;
+}
+.banner__name {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: -0.02em;
+}
+.banner__role {
+  font-size: 12px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.banner__divider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: var(--panel-divider);
+  transition: background-color var(--t) var(--ease);
+}
+.banner__text {
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: -0.02em;
+}
+.banner__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+/* buttons: Figma component "button" (primary = phone, secondary = e-mail) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease), box-shadow 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+.btn img {
+  width: 20px;
+  height: 20px;
+}
+.btn .icon-hover {
+  display: none;
+}
+.btn--primary {
+  background: var(--light-gray);
+  color: var(--mid-gray);
+  padding-left: 8px;
+  border-color: transparent;
+}
+.btn--secondary {
+  justify-content: center;
+  width: 147px;
+  background: var(--mid-gray);
+  color: var(--light-gray);
+  border-color: transparent;
+}
+.btn--primary:hover {
+  background: var(--white);
+  color: var(--dark-gray);
+  box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 5px 2.5px rgba(0, 0, 0, 0.09), 0 12px 3.5px rgba(0, 0, 0, 0.05),
+    0 20px 4px rgba(0, 0, 0, 0.01);
+}
+.btn--secondary:hover {
+  background: var(--hover-gray);
+  color: var(--white);
+  box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 5px 2.5px rgba(0, 0, 0, 0.09), 0 12px 3.5px rgba(0, 0, 0, 0.05),
+    0 20px 4px rgba(0, 0, 0, 0.01);
+}
+.btn:hover .icon-default {
+  display: none;
+}
+.btn:hover .icon-hover {
+  display: block;
+}
+.btn[aria-disabled='true'] {
+  cursor: default;
+}
+
+/* ------------------------------------------------------------- video tab */
+.video-tab {
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: min(330px, calc(100% - 32px));
+  height: 38px;
+  padding: 8px;
+  border: 1px solid var(--tab-border);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: var(--tab-bg);
+  color: var(--tab-text);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.02em;
+  text-align: center;
+  transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease),
+    color var(--t) var(--ease);
+}
+.video-tab__icon {
+  position: relative;
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+.video-tab__icon img {
+  position: absolute;
+  inset: 0;
+  width: 24px;
+  height: 24px;
+  transition: opacity var(--t) var(--ease);
+}
+.video-tab__icon .icon-active {
+  opacity: 0;
+}
+:root[data-state='active'] .video-tab__icon .icon-default {
+  opacity: 0;
+}
+:root[data-state='active'] .video-tab__icon .icon-active {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------- promo bar */
+.promo {
+  position: fixed;
+  z-index: 60;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1px solid var(--light-gray-20);
+  background: var(--brown);
+  color: var(--black);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 13px;
+  letter-spacing: -0.02em;
+  text-align: center;
+  text-wrap: balance;
+  /* hidden until the timing logic of milestone 03 shows it; never shifts the layout (fixed overlay) */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-100%);
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), visibility 0s linear 0.5s;
+}
+.promo[data-visible='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), visibility 0s;
+}
+
+/* ------------------------------------------------------ info / credit line */
+.credit {
+  display: none;
+}
+
+/* ------------------------------------------------------------ video modal */
+.modal {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--mobile-bg);
+  color: var(--caption-gray);
+  overflow: hidden;
+}
+.modal:not([open]) {
+  display: none;
+}
+.modal[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.modal__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+}
+.modal__figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin: 0;
+}
+.modal__video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 395 / 222;
+  background: var(--black);
+}
+.modal__video video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--black);
+}
+/* Soft dark vignette around the video: separate layer, never intercepts pointer events. */
+.modal__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  background: radial-gradient(
+    ellipse closest-side at 50% 50%,
+    rgba(0, 0, 0, 0) 62.9%,
+    rgba(0, 0, 0, 0.4) 82.8%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+.modal__caption {
+  width: 100%;
+  padding: 0 16px;
+  font-weight: 500;
+  font-size: 9px;
+  line-height: 12px;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: var(--caption-gray);
+}
+.modal__video-missing {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  font-size: 10px;
+  text-align: center;
+  color: var(--caption-gray);
+}
+
+.close-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--light-gray-20);
+  border-radius: 2px;
+  transition: background-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.close-btn img {
+  width: 20px;
+  height: 20px;
+}
+.close-btn .icon-hover {
+  display: none;
+}
+.close-btn:hover {
+  background: var(--white);
+  border-color: transparent;
+  box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 5px 2.5px rgba(0, 0, 0, 0.09), 0 12px 3.5px rgba(0, 0, 0, 0.05),
+    0 20px 4px rgba(0, 0, 0, 0.01);
+}
+.close-btn:hover .icon-default {
+  display: none;
+}
+.close-btn:hover .icon-hover {
+  display: block;
+}
+
+/* ================================================================ desktop */
+@media (min-width: 960px) {
+  .br-mobile {
+    display: none;
+  }
+  .br-desktop {
+    display: inline;
+  }
+
+  .stage {
+    min-height: max(100svh, 760px);
+  }
+
+  .hero {
+    top: 77px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+  }
+  .hero__headline {
+    font-size: 48px;
+  }
+  .hero__line--textured {
+    margin-bottom: -22px;
+    line-height: 58px;
+    background-image: url('../assets/figma/headline-texture-desktop.png');
+  }
+  :root[data-state='active'] .hero__line--textured {
+    background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
+      url('../assets/figma/headline-texture-desktop.png');
+  }
+  .hero__line--accent {
+    line-height: 58px;
+  }
+
+  /* tags: two columns around the kettlebell (Figma: col 1 at x=336, col 2 at x=786 in a 1280 frame) */
+  .tags {
+    top: 37.4%;
+    left: 50%;
+    right: auto;
+    width: 608px;
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-columns: 178px 158px;
+    grid-auto-rows: 25px;
+    column-gap: 272px;
+    row-gap: 41px;
+    align-items: start;
+    justify-content: space-between;
+  }
+  /* DOM order = mobile order; desktop placement per Figma */
+  .tag:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: end; } /* mobilitás + hajlékonyság */
+  .tag:nth-child(5) { grid-column: 1; grid-row: 2; justify-self: end; } /* robbanékony erő */
+  .tag:nth-child(6) { grid-column: 1; grid-row: 3; justify-self: end; } /* izomépítés */
+  .tag:nth-child(7) { grid-column: 1; grid-row: 4; justify-self: end; } /* törzserő */
+  .tag:nth-child(4) { grid-column: 2; grid-row: 1; justify-self: start; } /* testzsírcsökkentés */
+  .tag:nth-child(3) { grid-column: 2; grid-row: 2; justify-self: start; } /* kardió + állóképesség */
+  .tag:nth-child(2) { grid-column: 2; grid-row: 3; justify-self: start; } /* ízületkímélő terhelés */
+  .tag:nth-child(8) { grid-column: 2; grid-row: 4; justify-self: start; } /* fogáserő */
+
+  .banner {
+    bottom: calc(49px + var(--panel-shift));
+    flex-direction: row;
+    gap: 32px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    padding: 8px 16px 8px 8px;
+  }
+  .banner__profile {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .banner__divider {
+    flex: none;
+    width: 1px;
+    height: 88px;
+  }
+  .banner__text {
+    flex: 0 1 430px;
+    width: 430px;
+    min-width: 0;
+  }
+  .banner__actions {
+    flex: none;
+    width: auto;
+    justify-content: flex-start;
+  }
+
+  .video-tab {
+    left: auto;
+    right: 0;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    width: auto;
+    height: auto;
+    padding: 8px 16px;
+    border: 1px solid var(--tab-border);
+    border-right: 0;
+    border-radius: 6px 0 0 6px;
+  }
+
+  .credit {
+    position: absolute;
+    z-index: 2;
+    right: 24px;
+    bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .credit__text {
+    font-weight: 500;
+    font-size: 9px;
+    line-height: 12px;
+    letter-spacing: -0.02em;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--light-gray);
+    opacity: 0; /* Figma "Frame 35": icon only; text appears on hover/focus ("Frame 34") */
+    transition: opacity 0.2s var(--ease);
+  }
+  .credit:hover .credit__text,
+  .credit:focus-within .credit__text {
+    opacity: 1;
+  }
+  .credit__btn {
+    display: block;
+    width: 24px;
+    height: 24px;
+  }
+  .credit__btn img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .modal__inner {
+    width: 803px;
+    max-width: calc(100% - 32px);
+  }
+  .modal__figure .modal__video {
+    aspect-ratio: 803 / 452;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .modal {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

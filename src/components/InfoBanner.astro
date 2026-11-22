@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets';
+import avatar from '../assets/figma/avatar.png';
+import iconCall from '../assets/figma/icon-call.svg';
+import iconCallHover from '../assets/figma/icon-call-hover.svg';
+import iconMail from '../assets/figma/icon-mail.svg';
+import iconMailHover from '../assets/figma/icon-mail-hover.svg';
+import { contact } from '../config';
+---
+
+<section class="banner" aria-label="Varga Tamás, SFG instruktor">
+  <div class="banner__profile">
+    <div class="banner__person">
+      <Image
+        class="banner__avatar"
+        src={avatar}
+        width={88}
+        height={88}
+        densities={[1, 2, 3]}
+        format="webp"
+        quality={85}
+        alt="Varga Tamás"
+        loading="eager"
+      />
+      <div class="banner__details">
+        <p class="banner__name">Varga Tamás</p>
+        <p class="banner__role">SFG instruktor</p>
+      </div>
+    </div>
+    <span class="banner__divider" aria-hidden="true"></span>
+    <p class="banner__text">
+      Tanuld meg helyesen használni a kettlebellt, építs funkcionális erőt, és fejlődj biztonságosan. Ebben 18 év
+      rehabilitációs és edzői tapasztalatával, StrongFirst szemlélettel segítelek.
+    </p>
+  </div>
+  <div class="banner__actions">
+    <a class="btn btn--primary" href={`tel:${contact.phoneHref}`}>
+      <img class="icon-default" src={iconCall.src} width="20" height="20" alt="" />
+      <img class="icon-hover" src={iconCallHover.src} width="20" height="20" alt="" />
+      <span>{contact.phoneDisplay}</span>
+    </a>
+    {
+      contact.email ? (
+        <a class="btn btn--secondary" href={`mailto:${contact.email}`}>
+          <img class="icon-default" src={iconMail.src} width="20" height="20" alt="" />
+          <img class="icon-hover" src={iconMailHover.src} width="20" height="20" alt="" />
+          <span>E-mail küldése</span>
+        </a>
+      ) : (
+        <a class="btn btn--secondary" aria-disabled="true">
+          <img class="icon-default" src={iconMail.src} width="20" height="20" alt="" />
+          <img class="icon-hover" src={iconMailHover.src} width="20" height="20" alt="" />
+          <span>E-mail küldése</span>
+        </a>
+      )
+    }
+  </div>
+</section>

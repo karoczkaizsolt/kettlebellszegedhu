@@ -1,0 +1,51 @@
+---
+import { splineSceneUrl } from '../config';
+---
+
+<!-- The Spline scene owns the kettlebell animation, colour change and hover/tap logic.
+     This component only hosts the canvas and loads the scene after the first render. -->
+<div class="scene" data-scene data-scene-state="idle" data-scene-url={splineSceneUrl} aria-hidden="true">
+  <canvas data-scene-canvas></canvas>
+</div>
+
+<script>
+  const host = document.querySelector<HTMLElement>('[data-scene]');
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-scene-canvas]');
+
+  // The scene was exported for WebGPU only: browsers without a WebGPU adapter cannot render it.
+  async function hasWebGPU(): Promise<boolean> {
+    try {
+      const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
+      return !!gpu && !!(await gpu.requestAdapter());
+    } catch {
+      return false;
+    }
+  }
+
+  async function loadScene() {
+    if (!host || !canvas) return;
+    if (!(await hasWebGPU())) {
+      // Fallback: the page stays fully usable without the 3D scene (the runtime is not even downloaded).
+      host.dataset.sceneState = 'unsupported';
+      return;
+    }
+    host.dataset.sceneState = 'loading';
+    try {
+      const { Application } = await import('@splinetool/runtime');
+      const app = new Application(canvas);
+      await app.load(host.dataset.sceneUrl as string);
+      host.dataset.sceneState = 'ready';
+    } catch (error) {
+      host.dataset.sceneState = 'failed';
+      console.warn('Spline scene could not be loaded', error);
+    }
+  }
+
+  // Do not compete with the first render: start after load, when the browser is idle.
+  const start = () => {
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback;
+    idle ? idle(loadScene) : setTimeout(loadScene, 200);
+  };
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load', start, { once: true });
+</script>

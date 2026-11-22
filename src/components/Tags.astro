@@ -1,0 +1,18 @@
+---
+// Labels around the kettlebell (Figma `tag`). DOM order follows the mobile layout;
+// the desktop grid placement is set in global.css.
+const tags = [
+  'mobilitás + hajlékonyság',
+  'ízületkímélő terhelés',
+  'kardió + állóképesség',
+  'testzsírcsökkentés',
+  'robbanékony erő',
+  'izomépítés',
+  'törzserő',
+  'fogáserő',
+];
+---
+
+<ul class="tags" data-tags>
+  {tags.map((tag) => <li class="tag">{tag}</li>)}
+</ul>

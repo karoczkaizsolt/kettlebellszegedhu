@@ -1,0 +1,69 @@
+/* Design tokens, taken from the Figma variables (file FMm8M3VGmIyzVpmJUXe9Oi). */
+:root {
+  /* colours */
+  --black: #000;
+  --white: #fff;
+  --dark-gray: #18191b;
+  --mid-gray: #28292c;
+  --hover-gray: #3f4145; /* secondary button hover (Figma, State=Hover) */
+  --gray: #80818b;
+  --light-gray: #e0e0e0;
+  --brown: #bf7017;
+  --muted-brown: #807369; /* active subtitle / logo: #80818B + 30% #805318, flattened */
+  --caption-gray: #d9d9d9;
+  --mobile-bg: #141414;
+  --black-20: rgba(24, 25, 27, 0.2);
+  --light-gray-20: rgba(224, 224, 224, 0.2);
+
+  /* typography */
+  --font-display: 'Basement Grotesque', 'Arial Black', Impact, sans-serif;
+  --font-mono: 'Sometype Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t: 0.4s;
+
+  /* ---- state-dependent values (default state) ---- */
+  --page-bg: var(--dark-gray);
+  --eyebrow-color: var(--gray); /* also the StrongFirst logo colour */
+  --headline-accent: var(--light-gray);
+  --headline-overlay: transparent;
+  --panel-bg: transparent;
+  --panel-border: var(--light-gray-20);
+  --panel-text: var(--light-gray);
+  --panel-divider: var(--light-gray-20);
+  --tab-bg: transparent;
+  --tab-border: var(--light-gray-20);
+  --tab-text: var(--caption-gray);
+  --tags-opacity: 0;
+  --tags-visibility: hidden;
+  --panel-shift: 0px;
+}
+
+/* ---- active state (mirrors the Spline `kettlebellLifted` state; wired up in milestone 03) ---- */
+:root[data-state='active'] {
+  --page-bg: var(--brown);
+  --eyebrow-color: var(--muted-brown);
+  --headline-accent: var(--brown);
+  --headline-overlay: rgba(128, 83, 24, 0.3);
+  --panel-bg: var(--brown);
+  --panel-border: var(--black-20);
+  --panel-text: var(--black);
+  --panel-divider: var(--black-20);
+  --tab-bg: var(--brown);
+  --tab-border: var(--black-20);
+  --tab-text: var(--black);
+  --tags-opacity: 1;
+  --tags-visibility: visible;
+  --panel-shift: 40px; /* desktop only: panel moves 40px up in the active Figma frame */
+}
+
+@media (max-width: 959.98px) {
+  :root {
+    --page-bg: var(--mobile-bg);
+  }
+  :root[data-state='active'] {
+    --page-bg: var(--mobile-bg);
+    --panel-shift: 0px; /* mobile active frame keeps the panel in place */
+  }
+}
