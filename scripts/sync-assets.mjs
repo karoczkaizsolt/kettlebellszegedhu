@@ -10,7 +10,7 @@ const src = (p) => join(root, 'assets', p);
 const dst = (p) => join(root, 'public', p);
 
 const copies = [
-  ['scene-v3.splinecode', 'spline/scene-v3.splinecode'],
+  ['scene-v4.splinecode', 'spline/scene-v4.splinecode'],
   ['strongfirst-logo.svg', 'img/strongfirst-logo.svg'],
   ['BasementGrotesque-Black.otf', 'fonts/BasementGrotesque-Black.otf'],
 ];

@@ -59,8 +59,8 @@ Source files live in `assets/`. They are the originals: never edit, overwrite or
 
 | Asset | Status | Notes |
 |---|---|---|
-| `assets/scene-v3.splinecode` | Available, **in use** | Third export (`Play_Camera` tilt -35° → -31.63°, bell about 7.2% of the height lower in the composition, same size). Used as is; still reports WebGPU-only (see section 8). The page loads it as `/spline/scene-v3.splinecode`. |
-| `assets/scene-v2.splinecode`, `assets/scene.splinecode`, `assets/scene.webgpu-only.original.splinecode` | Kept, not used | Original scene and its backup copy. Never delete or overwrite. |
+| `assets/scene-v4.splinecode` | Available, **in use** | Fourth export: smaller kettlebell (about 12% by the neck-highlight spacing), bottom edge in place, lift not higher than before. Used as is; still reports WebGPU-only (see section 8). The page loads it as `/spline/scene-v4.splinecode`. |
+| `assets/scene-v3.splinecode`, `assets/scene-v2.splinecode`, `assets/scene.splinecode`, `assets/scene.webgpu-only.original.splinecode` | Kept, not used | Original scene and its backup copy. Never delete or overwrite. |
 | `assets/video.mp4` | Available, **never committed to Git** | Local intro video (1920×1080, H.264, ~190 s, ~68 MB). Source of the video. Never edit or delete the original; ship an optimized web version. See section 4 (Video and Git) and the hosting plan in `docs/01-audit-and-setup.md`. |
 | `assets/BasementGrotesque-Black.otf` | Available, sufficient | Black (weight 800) is the **only** Basement Grotesque weight used anywhere in the Figma design (H0, H1, headline, subtitle; verified on desktop/mobile default and active frames). No other weights are needed. Self-host; convert to woff2 if a conversion tool is approved, otherwise use the OTF as is (about 40 KB). |
 | `assets/strongfirst-logo.svg` | Available | Exported as SVG from the original Figma element (node `2154:627`, 101×20). Use this one file in both states; do not redraw or substitute it. Colour: default `#80818B`, active `#807369` (see section 8, Logo colour). |

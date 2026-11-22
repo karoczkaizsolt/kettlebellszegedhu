@@ -2,10 +2,13 @@
 import iconInfo from '../assets/figma/icon-info.svg';
 ---
 
-<!-- Figma "info": icon only; the credit line appears on hover/focus. Desktop only (not part of the mobile frames). -->
+<!-- Figma "info" (Frame 35 closed / Frame 34 open), placed bottom-left by the design owner. Desktop and mobile.
+     DOM order: button first, so `.credit__btn:hover + .credit__clip` can open the text to the right of the icon. -->
 <div class="credit">
-  <p class="credit__text" id="credit-text">2026 © Varga Tamás • KZS Design</p>
   <button type="button" class="credit__btn" aria-describedby="credit-text" aria-label="Információ a weboldalról">
     <img src={iconInfo.src} width="24" height="24" alt="" />
   </button>
+  <div class="credit__clip">
+    <p class="credit__text" id="credit-text">© 2026 Varga Tamás. Minden jog fenntartva. • Weboldal: <a class="credit__link" href="https://karoczkaizsolt.work" target="_blank" rel="noopener">KZS Design</a></p>
+  </div>
 </div>

@@ -26,7 +26,7 @@ export const promoBar = {
   repeatMs: 45000,
 } as const;
 
-export const splineSceneUrl = '/spline/scene-v3.splinecode';
+export const splineSceneUrl = '/spline/scene-v4.splinecode';
 
 /** Contact details shown in the info banner (only what is in the approved design). */
 export const contact = {
