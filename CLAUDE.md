@@ -288,19 +288,17 @@ Text:
 
 ### Behaviour
 
-Initial timing:
-- First appearance: 5 seconds after page load.
-- Visible duration: 6 seconds.
-- Repeat interval: 45 seconds.
-
-These values must be configurable in one place.
+Design owner's update (supersedes the earlier 5 s / 6 s / 45 s repeat and the once-per-session rule):
+- Appears 3 seconds after the page has loaded, stays visible for 6 seconds, then disappears.
+- Shown on **every page load, reloads included**, once per load; no repetition on the same load, no ticker behaviour. No `sessionStorage` or any other display restriction.
+- Delay, visible time and enter/exit durations are configured in one place: `promoBar` in `src/config.ts`.
 
 ### Visual requirements
 
 - Fixed overlay at the top of the viewport.
 - Must not push or shift the underlying content.
 - Must not cause layout shifts (CLS).
-- Match Figma dimensions, typography and colors.
+- Match Figma dimensions, typography and colors (current Figma: white background, no border, 24px orange bell icon `assets` `src/assets/figma/icon-notifications-active.svg`, 16px gap, 8px/16px padding, Sometype Mono 12px black, letter-spacing -0.24px, first sentence SemiBold, second Regular; 40 px high on desktop; on narrow screens the text wraps to two lines).
 - Work on desktop and mobile.
 - Use subtle slide-down and fade-in animation.
 - Use fade-out and slide-up when disappearing.

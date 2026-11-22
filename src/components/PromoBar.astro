@@ -1,7 +1,37 @@
 ---
-// Figma 2154:625. Fixed overlay at the top; hidden until the timing logic (milestone 03) shows it.
+// Figma 2154:625. A fixed overlay at the top of the viewport, shown once on every page load
+// (timing and animation values: `promoBar` in src/config.ts).
+import { promoBar } from '../config';
+import iconBell from '../assets/figma/icon-notifications-active.svg';
 ---
 
-<div class="promo" role="status" data-promo>
-  <p>Rendszeresen induló kiscsoportos kezdő kurzusok. Érdeklődj a részletekért!</p>
+<div
+  class="promo"
+  role="status"
+  data-promo
+  data-delay={promoBar.firstDelayMs}
+  data-visible-ms={promoBar.visibleMs}
+  style={`--promo-enter: ${promoBar.enterMs}ms; --promo-exit: ${promoBar.exitMs}ms`}
+>
+  <img class="promo__icon" src={iconBell.src} width="24" height="24" alt="" />
+  <p><strong>Rendszeresen induló kiscsoportos kezdő kurzusok.</strong> Érdeklődj a részletekért!</p>
 </div>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-promo]');
+
+  if (bar) {
+    const delay = Number(bar.dataset.delay);
+    const visibleMs = Number(bar.dataset.visibleMs);
+    // The timer starts when the page has finished loading; one show per page load, no repetition.
+    const start = () =>
+      window.setTimeout(() => {
+        bar.dataset.visible = 'true';
+        window.setTimeout(() => {
+          bar.dataset.visible = 'false';
+        }, visibleMs);
+      }, delay);
+    if (document.readyState === 'complete') start();
+    else window.addEventListener('load', start, { once: true });
+  }
+</script>

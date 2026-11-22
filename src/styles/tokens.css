@@ -25,7 +25,7 @@
   --t: 0.4s;
 
   /* ---- state-dependent values (default state) ---- */
-  --page-bg: var(--dark-gray);
+  --page-bg: var(--black); /* global page background: pure black (design-owner decision) */
   --eyebrow-color: var(--gray); /* also the StrongFirst logo colour */
   --headline-accent: var(--light-gray);
   --headline-overlay: transparent;
@@ -61,10 +61,10 @@
 
 @media (max-width: 959.98px) {
   :root {
-    --page-bg: var(--mobile-bg);
+    --page-bg: var(--black);
   }
   :root[data-state='active'] {
-    --page-bg: var(--mobile-bg);
+    --page-bg: var(--black);
     --panel-shift: 0px; /* mobile active frame keeps the panel in place */
   }
 }

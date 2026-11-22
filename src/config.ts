@@ -19,11 +19,15 @@ export const videoSrc: string = import.meta.env.PUBLIC_VIDEO_SRC || '/video/intr
 export const PAGE_STATE_ATTRIBUTE = 'data-state';
 export const PAGE_STATES = { default: 'default', active: 'active' } as const;
 
-/** Promo bar timing (milestone 03), in one place. */
+/** Promo bar: timing and animation values in one place. It is shown on every page load (reloads included), once per load. */
 export const promoBar = {
-  firstDelayMs: 5000,
+  /** Delay after the page has loaded before the bar slides in. */
+  firstDelayMs: 3000,
+  /** How long the bar stays visible. */
   visibleMs: 6000,
-  repeatMs: 45000,
+  /** Slide-down + fade-in and fade-out + slide-up durations. */
+  enterMs: 600,
+  exitMs: 500,
 } as const;
 
 export const splineSceneUrl = '/spline/scene-v4.splinecode';

@@ -427,6 +427,9 @@ a {
 }
 
 /* --------------------------------------------------------------- promo bar */
+/* Figma 2154:625 (current): full-width white bar, 8px/16px padding, 16px gap, orange bell icon (24px) and text
+   Sometype Mono 12px, black, letter-spacing -0.24px (first sentence SemiBold 12/16, second Regular 12/20); 40px high.
+   A fixed overlay: it never takes part in the layout (no CLS) and never catches the pointer. */
 .promo {
   position: fixed;
   z-index: 60;
@@ -436,29 +439,47 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 16px;
+  box-sizing: border-box;
+  min-height: 40px;
   padding: 8px 16px;
-  border: 1px solid var(--light-gray-20);
-  background: var(--brown);
+  background: var(--white);
   color: var(--black);
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 13px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
   letter-spacing: -0.02em;
   text-align: center;
   text-wrap: balance;
-  /* hidden until the timing logic of milestone 03 shows it; never shifts the layout (fixed overlay) */
+  pointer-events: none;
+  /* hidden state (before the delay and after the bar has been shown): above the viewport, transparent, out of the a11y tree */
   opacity: 0;
   visibility: hidden;
   transform: translateY(-100%);
-  pointer-events: none;
-  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), visibility 0s linear 0.5s;
+  transition: opacity var(--promo-exit, 500ms) var(--ease), transform var(--promo-exit, 500ms) var(--ease),
+    visibility 0s linear var(--promo-exit, 500ms);
 }
 .promo[data-visible='true'] {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-  pointer-events: auto;
-  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), visibility 0s;
+  transition: opacity var(--promo-enter, 600ms) var(--ease), transform var(--promo-enter, 600ms) var(--ease),
+    visibility 0s;
+}
+.promo__icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+.promo strong {
+  font-weight: 600;
+  line-height: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .promo,
+  .promo[data-visible='true'] {
+    transform: none; /* fade only */
+  }
 }
 
 /* ------------------------------------------------------ info / credit line */
