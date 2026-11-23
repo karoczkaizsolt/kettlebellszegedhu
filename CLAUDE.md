@@ -297,6 +297,7 @@ Design owner's update (supersedes the earlier 5 s / 6 s / 45 s repeat and the on
 
 ### Visual requirements
 
+- Design-owner update: one flat background colour (`--promo-bg`) on every screen size, no gradient and no animation other than the slide; the icon is hidden below 768 px.
 - Fixed overlay at the top of the viewport.
 - Must not push or shift the underlying content.
 - Must not cause layout shifts (CLS).

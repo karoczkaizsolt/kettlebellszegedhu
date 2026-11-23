@@ -31,6 +31,7 @@
   --t: 0.4s;
 
   /* ---- state-dependent values (default state) ---- */
+  --promo-bg: #b8b8b8; /* promo bar: the muted, darker tone of the former gradient; black text stays readable (about 10:1) */
   --page-bg: var(--black); /* global page background: pure black (design-owner decision) */
   --eyebrow-color: var(--gray); /* also the StrongFirst logo colour */
   --headline-accent: var(--light-gray);

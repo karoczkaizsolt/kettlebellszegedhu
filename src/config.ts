@@ -28,8 +28,6 @@ export const promoBar = {
   /** Slide-down + fade-in and fade-out + slide-up durations. */
   enterMs: 600,
   exitMs: 500,
-  /** One light sweep over the bar's gradient, started when the slide-in has finished. Not repeated. */
-  sheenMs: 2500,
 } as const;
 
 export const splineSceneUrl = '/spline/scene-v4.splinecode';

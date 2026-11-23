@@ -76,6 +76,9 @@ a {
 }
 
 /* Line breaks that only exist on one layout */
+.br-eyebrow {
+  display: none; /* only used at 768px-class tablets, see the 700-799px block */
+}
 .br-mobile {
   display: inline;
 }
@@ -443,15 +446,8 @@ a {
   gap: 8px; /* Figma: icon 20px, gap 8px */
   box-sizing: border-box;
   min-height: 38px;
-  overflow: hidden; /* clips the light sweep; the bar size is unaffected */
   padding: 8px 16px;
-  /* Figma gradient: left to right, transparent white at 15.215 %, white at 51.442 %, transparent at 85.226 % */
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 15.215%,
-    #fff 51.442%,
-    rgba(255, 255, 255, 0) 85.226%
-  );
+  background: var(--promo-bg); /* one flat colour on every screen size (no gradient, no animation) */
   color: var(--black);
   font-weight: 400;
   font-size: calc(14px + var(--fs-boost));
@@ -483,68 +479,16 @@ a {
   font-weight: 600;
   line-height: calc(22px + var(--fs-boost));
 }
-/* Tone sweep: one wide, soft, moderately blurred patch in the bar's own grey-white palette crosses the bar once,
-   left to right, after the slide-in: a grey (darker) leading half and a white (lighter) trailing half, with the
-   intensity rising and falling smoothly. No glow, no colour. It sits in a pseudo-element behind icon and text
-   (z-index -1 in the bar's stacking context, clipped by the bar's overflow), pointer-events none, no layout impact.
-   Idle/after: off the bar and transparent (static gradient). */
-.promo::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  top: -12px;
-  bottom: -12px;
-  left: 0;
-  width: 55%;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    rgba(128, 128, 128, 0) 0%,
-    rgba(110, 110, 115, 0.3) 30%,
-    rgba(255, 255, 255, 0.55) 70%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  filter: blur(10px);
-  opacity: 0;
-  transform: translateX(-100%);
-}
-.promo[data-visible='true']::before {
-  animation: promo-sheen var(--promo-sheen, 2500ms) cubic-bezier(0.4, 0, 0.3, 1) var(--promo-enter, 600ms) 1 both;
-}
-@keyframes promo-sheen {
-  0% {
-    opacity: 0;
-    transform: translateX(-100%);
+/* Phones: the text alone, centred, using the whole bar width. */
+@media (max-width: 767.98px) {
+  .promo__icon {
+    display: none;
   }
-  30% {
-    opacity: 1;
-  }
-  60% {
-    opacity: 0.6;
-  }
-  80% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(182%);
-  }
-}
-/* Mobile (no Figma frame): the text fills almost the whole bar, so the white plateau is widened and only the outer
-   6 % fade; with the desktop stops the black text would sit on the dark page at the sides. */
-@media (max-width: 959.98px) {
-  .promo {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #fff 6%, #fff 94%, rgba(255, 255, 255, 0) 100%);
-  }
-
 }
 @media (prefers-reduced-motion: reduce) {
   .promo,
   .promo[data-visible='true'] {
     transform: none; /* fade only */
-  }
-  .promo[data-visible='true']::before {
-    animation: none; /* no light sweep */
   }
 }
 
@@ -758,6 +702,14 @@ a {
    same font size as the fluid tablet scale above (no size reduction), overlap and line heights follow the desktop
    ratios (58/48 and -22/48) with the desktop texture image. 480-699px and 800-959px keep the three-line composition. */
 @media (min-width: 700px) and (max-width: 799.98px) {
+  /* Intro text on exactly two lines: break after "és", no further wrapping (font, weight and line height unchanged). */
+  .br-eyebrow {
+    display: inline;
+  }
+  .hero__eyebrow {
+    white-space: nowrap;
+    text-align: center;
+  }
   .br-mobile {
     display: none;
   }
