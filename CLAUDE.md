@@ -217,6 +217,8 @@ The page background is implemented in CSS and follows the dark and orange states
 
 **Update (scene v3):** the camera of `scene-v3.splinecode` already frames the composition like the Figma frames, so the canvas is simply full-bleed (`.scene { inset: 0 }`) with no shift and no mask, and the scene's own backdrop fills the whole stage on desktop and mobile. The scene scales with the canvas height (ring at about 37.8% of the height, kettlebell body about 0.255 × the height), so very tall or large viewports show a proportionally larger kettlebell. The CSS page background only shows when the scene is unavailable (fallback).
 
+**Phones (below 768 px):** the kettlebell composition is shown smaller (about 80 %) by pulling the scene camera back at runtime after the scene has loaded (`sceneMobile` in `src/config.ts`, applied in `SplineScene.astro`; the `.splinecode` file is not modified). The canvas stays full size; no CSS scale, mask, vignette or background trick is used, so the scene's own backdrop fills the viewport in both states. `dollyBack: 0` switches it off.
+
 ### Technical requirements
 
 - Keep the Spline scene independent from the surrounding UI.

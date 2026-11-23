@@ -1,10 +1,19 @@
 ---
-import { splineSceneUrl } from '../config';
+import { splineSceneUrl, sceneMobile } from '../config';
 ---
 
 <!-- The Spline scene owns the kettlebell animation, colour change and hover/tap logic.
      This component only hosts the canvas and loads the scene after the first render. -->
-<div class="scene" data-scene data-scene-state="idle" data-scene-url={splineSceneUrl} aria-hidden="true">
+<div
+  class="scene"
+  data-scene
+  data-scene-state="idle"
+  data-scene-url={splineSceneUrl}
+  data-mobile-max={sceneMobile.maxWidth}
+  data-mobile-dolly={sceneMobile.dollyBack}
+  data-camera-name={sceneMobile.cameraName}
+  aria-hidden="true"
+>
   <canvas data-scene-canvas></canvas>
 </div>
 
@@ -22,6 +31,27 @@ import { splineSceneUrl } from '../config';
     }
   }
 
+  // Phones: show the composition smaller by pulling the scene camera back along its viewing direction (runtime
+  // only, the scene file is untouched). The canvas keeps its full size, so no backdrop edge appears.
+  function applyMobileComposition(app: {
+    findObjectByName(name: string): { position: { y: number; z: number }; rotation: { x?: number; _x?: number } } | undefined;
+  }) {
+    if (!host) return;
+    const dolly = Number(host.dataset.mobileDolly);
+    const cam = app.findObjectByName(host.dataset.cameraName as string);
+    if (!cam || !dolly) return;
+    const rx = cam.rotation._x ?? cam.rotation.x ?? 0;
+    const base = { y: cam.position.y, z: cam.position.z };
+    const query = window.matchMedia(`(max-width: ${host.dataset.mobileMax}px)`);
+    const apply = () => {
+      const d = query.matches ? dolly : 0;
+      cam.position.y = base.y - Math.sin(rx) * d; // back = -forward, forward = (0, sin(rx), -cos(rx))
+      cam.position.z = base.z + Math.cos(rx) * d;
+    };
+    apply();
+    query.addEventListener('change', apply);
+  }
+
   async function loadScene() {
     if (!host || !canvas) return;
     if (!(await hasWebGPU())) {
@@ -34,6 +64,7 @@ import { splineSceneUrl } from '../config';
       const { Application } = await import('@splinetool/runtime');
       const app = new Application(canvas);
       await app.load(host.dataset.sceneUrl as string);
+      applyMobileComposition(app);
       host.dataset.sceneState = 'ready';
     } catch (error) {
       host.dataset.sceneState = 'failed';

@@ -32,6 +32,18 @@ export const promoBar = {
 
 export const splineSceneUrl = '/spline/scene-v4.splinecode';
 
+/**
+ * Phones (below `maxWidth`): the scene composition is shown smaller by moving the scene camera back at runtime
+ * (the .splinecode file is untouched). The canvas stays full size, so the scene's own backdrop fills the viewport.
+ * `dollyBack` is the distance (scene units) the camera is pulled back along its viewing direction; 365 makes the
+ * kettlebell about 80 % of its normal size. Set it to 0 to switch the effect off.
+ */
+export const sceneMobile = {
+  maxWidth: 767.98,
+  dollyBack: 365,
+  cameraName: 'Play_Camera',
+} as const;
+
 /** Contact details shown in the info banner (only what is in the approved design). */
 export const contact = {
   phoneDisplay: '+36 30 98 33 750',
