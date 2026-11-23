@@ -2,7 +2,7 @@
 // Figma 2154:625. A fixed overlay at the top of the viewport, shown once on every page load
 // (timing and animation values: `promoBar` in src/config.ts).
 import { promoBar } from '../config';
-import iconBell from '../assets/figma/icon-notifications-active.svg';
+import iconFire from '../assets/figma/icon-local-fire-department.svg';
 ---
 
 <div
@@ -11,9 +11,9 @@ import iconBell from '../assets/figma/icon-notifications-active.svg';
   data-promo
   data-delay={promoBar.firstDelayMs}
   data-visible-ms={promoBar.visibleMs}
-  style={`--promo-enter: ${promoBar.enterMs}ms; --promo-exit: ${promoBar.exitMs}ms`}
+  style={`--promo-enter: ${promoBar.enterMs}ms; --promo-exit: ${promoBar.exitMs}ms; --promo-sheen: ${promoBar.sheenMs}ms`}
 >
-  <img class="promo__icon" src={iconBell.src} width="20" height="20" alt="" />
+  <img class="promo__icon" src={iconFire.src} width="20" height="20" alt="" />
   <p><strong>Rendszeresen induló kiscsoportos kezdő kurzusok.</strong> Érdeklődj a részletekért!</p>
 </div>
 

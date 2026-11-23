@@ -440,9 +440,10 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 8px; /* Figma: icon 20px, gap 8px */
   box-sizing: border-box;
-  min-height: 36px;
+  min-height: 38px;
+  overflow: hidden; /* clips the light sweep; the bar size is unaffected */
   padding: 8px 16px;
   /* Figma gradient: left to right, transparent white at 15.215 %, white at 51.442 %, transparent at 85.226 % */
   background: linear-gradient(
@@ -454,7 +455,7 @@ a {
   color: var(--black);
   font-weight: 400;
   font-size: calc(14px + var(--fs-boost));
-  line-height: calc(20px + var(--fs-boost));
+  line-height: calc(22px + var(--fs-boost));
   letter-spacing: -0.02em;
   text-align: center;
   text-wrap: balance;
@@ -480,7 +481,54 @@ a {
 }
 .promo strong {
   font-weight: 600;
-  line-height: calc(16px + var(--fs-boost));
+  line-height: calc(22px + var(--fs-boost));
+}
+/* Tone sweep: one wide, soft, moderately blurred patch in the bar's own grey-white palette crosses the bar once,
+   left to right, after the slide-in: a grey (darker) leading half and a white (lighter) trailing half, with the
+   intensity rising and falling smoothly. No glow, no colour. It sits in a pseudo-element behind icon and text
+   (z-index -1 in the bar's stacking context, clipped by the bar's overflow), pointer-events none, no layout impact.
+   Idle/after: off the bar and transparent (static gradient). */
+.promo::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -12px;
+  bottom: -12px;
+  left: 0;
+  width: 55%;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(128, 128, 128, 0) 0%,
+    rgba(110, 110, 115, 0.3) 30%,
+    rgba(255, 255, 255, 0.55) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  filter: blur(10px);
+  opacity: 0;
+  transform: translateX(-100%);
+}
+.promo[data-visible='true']::before {
+  animation: promo-sheen var(--promo-sheen, 2500ms) cubic-bezier(0.4, 0, 0.3, 1) var(--promo-enter, 600ms) 1 both;
+}
+@keyframes promo-sheen {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  30% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(182%);
+  }
 }
 /* Mobile (no Figma frame): the text fills almost the whole bar, so the white plateau is widened and only the outer
    6 % fade; with the desktop stops the black text would sit on the dark page at the sides. */
@@ -488,11 +536,15 @@ a {
   .promo {
     background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #fff 6%, #fff 94%, rgba(255, 255, 255, 0) 100%);
   }
+
 }
 @media (prefers-reduced-motion: reduce) {
   .promo,
   .promo[data-visible='true'] {
     transform: none; /* fade only */
+  }
+  .promo[data-visible='true']::before {
+    animation: none; /* no light sweep */
   }
 }
 
