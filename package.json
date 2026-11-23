@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@splinetool/runtime": "^2.0.211",
-    "astro": "^7.4.13"
+    "astro": "^7.4.13",
+    "video.js": "^8.24.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",

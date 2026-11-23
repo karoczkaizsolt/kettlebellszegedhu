@@ -1,5 +1,5 @@
 ---
-import { splineSceneUrl, sceneMobile } from '../config';
+import { splineSceneUrl, sceneMobile, sceneState, PAGE_STATE_ATTRIBUTE, PAGE_STATES } from '../config';
 ---
 
 <!-- The Spline scene owns the kettlebell animation, colour change and hover/tap logic.
@@ -12,6 +12,11 @@ import { splineSceneUrl, sceneMobile } from '../config';
   data-mobile-max={sceneMobile.maxWidth}
   data-mobile-dolly={sceneMobile.dollyBack}
   data-camera-name={sceneMobile.cameraName}
+  data-state-variable={sceneState.variableName}
+  data-state-poll={sceneState.pollMs}
+  data-state-attribute={PAGE_STATE_ATTRIBUTE}
+  data-state-default={PAGE_STATES.default}
+  data-state-active={PAGE_STATES.active}
   aria-hidden="true"
 >
   <canvas data-scene-canvas></canvas>
@@ -52,6 +57,44 @@ import { splineSceneUrl, sceneMobile } from '../config';
     query.addEventListener('change', apply);
   }
 
+  // Mirror the scene's own `kettlebellLifted` variable into the page state. The page never decides the state and
+  // never adds its own hover/tap detection: the scene's Hitbox/MouseHover/MouseDown logic stays the only source.
+  function mirrorSceneState(app: {
+    getVariable(name: string): number | boolean | string;
+    addEventListener(name: string, cb: () => void): void;
+  }) {
+    if (!host) return;
+    const root = document.documentElement;
+    const attribute = host.dataset.stateAttribute as string;
+    const variable = host.dataset.stateVariable as string;
+    let last: string | undefined;
+    const sync = () => {
+      let lifted = false;
+      try {
+        lifted = app.getVariable(variable) === true;
+      } catch {
+        return;
+      }
+      const next = lifted ? (host.dataset.stateActive as string) : (host.dataset.stateDefault as string);
+      if (next !== last) {
+        last = next;
+        root.setAttribute(attribute, next);
+      }
+    };
+    sync();
+    // The scene updates the variable inside its own event handler: look again a moment after its events.
+    for (const name of ['mouseHover', 'mouseDown', 'mouseUp']) {
+      app.addEventListener(name, () => {
+        requestAnimationFrame(sync);
+        setTimeout(sync, 60);
+      });
+    }
+    const timer = window.setInterval(() => {
+      if (!document.hidden) sync();
+    }, Number(host.dataset.statePoll));
+    window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
+  }
+
   async function loadScene() {
     if (!host || !canvas) return;
     if (!(await hasWebGPU())) {
@@ -65,6 +108,7 @@ import { splineSceneUrl, sceneMobile } from '../config';
       const app = new Application(canvas);
       await app.load(host.dataset.sceneUrl as string);
       applyMobileComposition(app);
+      mirrorSceneState(app);
       host.dataset.sceneState = 'ready';
     } catch (error) {
       host.dataset.sceneState = 'failed';

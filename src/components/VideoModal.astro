@@ -8,21 +8,179 @@ import { videoSrc } from '../config';
 const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, quality: 80 });
 ---
 
-<!-- Figma 2148:396 (desktop) / 2154:576 (mobile). Layout only in milestone 02; behaviour comes in 03. -->
+<!-- Figma 2148:396 (desktop) / 2154:576 (mobile). Behaviour: open/close, ESC, scroll lock, focus return and the
+     Video.js player are in the script below. Video.js and its CSS are loaded only when the modal is first opened;
+     the video itself is not requested before the visitor presses play (preload="none"). -->
 <dialog id="video-modal" class="modal" aria-label="Bemutatkozó videó" data-video-modal>
-  <div class="modal__inner">
+  <div class="modal__inner" data-modal-inner>
     <figure class="modal__figure">
-      <div class="modal__video">
-        <video controls playsinline preload="none" poster={posterImage.src} data-video>
+      <div class="modal__video" data-video-frame>
+        <video
+          class="video-js vjs-vt"
+          controls
+          playsinline
+          preload="none"
+          poster={posterImage.src}
+          data-video
+          aria-label="Bemutatkozó videó"
+        >
           <source src={videoSrc} type="video/mp4" />
         </video>
-        <div class="modal__vignette" aria-hidden="true"></div>
+        <div class="modal__vignette" aria-hidden="true" data-vignette></div>
       </div>
       <figcaption class="modal__caption">Bemutatkozó videó / Kettlebell Szeged 2019</figcaption>
     </figure>
-    <button type="button" class="close-btn" aria-label="Bezárás" data-video-close>
+    <button type="button" class="close-btn" aria-label="Bezárás" data-video-close autofocus>
       <img class="icon-default" src={iconClose.src} width="20" height="20" alt="" />
       <img class="icon-hover" src={iconCloseHover.src} width="20" height="20" alt="" />
     </button>
   </div>
 </dialog>
+
+<script>
+  import type videojs from 'video.js';
+  type VideoJsPlayer = ReturnType<typeof videojs>;
+
+  const dialog = document.querySelector<HTMLDialogElement>('[data-video-modal]');
+  const openers = document.querySelectorAll<HTMLElement>('[data-video-open]');
+  const closer = document.querySelector<HTMLElement>('[data-video-close]');
+  const videoEl = document.querySelector<HTMLVideoElement>('[data-video]');
+  const vignette = document.querySelector<HTMLElement>('[data-vignette]');
+
+  let player: VideoJsPlayer | undefined;
+  let loading: Promise<VideoJsPlayer | undefined> | undefined;
+  let opener: HTMLElement | null = null;
+
+  // Video.js is loaded on first use only (it is not part of the initial page weight).
+  function ensurePlayer() {
+    if (player) return Promise.resolve(player);
+    loading ??= (async () => {
+      if (!videoEl) return undefined;
+      const [{ default: videojs }, { default: hu }] = await Promise.all([
+        import('video.js'),
+        import('video.js/dist/lang/hu.json'),
+        import('video.js/dist/video-js.css'),
+      ]);
+      videojs.addLanguage('hu', hu);
+      player = videojs(videoEl, {
+        language: 'hu',
+        controls: true,
+        preload: 'none',
+        fill: true,
+        playsinline: true,
+        responsive: false,
+        userActions: { hotkeys: true },
+        // Minimal control set: play/pause, progress, volume, fullscreen.
+        controlBar: {
+          children: ['playToggle', 'progressControl', 'volumePanel', 'fullscreenToggle'],
+          volumePanel: { inline: true },
+        },
+      });
+      // The vignette lives inside the player, above the picture and below the controls (picture only).
+      const el = player.el();
+      const controls = el.querySelector('.vjs-control-bar');
+      if (vignette) el.insertBefore(vignette, controls);
+      return player;
+    })();
+    return loading;
+  }
+
+  // Autoplay: playback starts once per opening, from the opening click. If the browser refuses sound
+  // (NotAllowedError), it is retried muted; if that fails too, the player simply stays paused with its play button.
+  let started = false;
+  let autoMuted = false;
+  async function startPlayback(p: VideoJsPlayer) {
+    if (started || !dialog?.open || closing) return;
+    started = true;
+    if (autoMuted) {
+      p.muted(false);
+      autoMuted = false;
+    }
+    const attempt = async () => {
+      const result = p.play();
+      if (result) await result;
+    };
+    try {
+      await attempt();
+    } catch (error) {
+      if ((error as DOMException)?.name !== 'NotAllowedError') return; // e.g. AbortError after a quick close
+      p.muted(true);
+      autoMuted = true;
+      try {
+        await attempt();
+      } catch {
+        /* playback blocked: the visitor presses play */
+      }
+    }
+  }
+
+  function open(from: HTMLElement) {
+    if (!dialog || dialog.open) return;
+    opener = from;
+    started = false;
+    document.documentElement.classList.add('is-modal-open'); // background scroll lock
+    dialog.showModal(); // the rest of the page becomes inert (no background interaction)
+    // With the player already prepared (see the warm-up below) play() runs inside the click itself, which is what
+    // Safari requires; otherwise it starts as soon as the player is ready.
+    if (player) void startPlayback(player);
+    else void ensurePlayer().then((p) => p && startPlayback(p));
+  }
+
+  // Closing plays the slide-out first (opposite direction), then closes the dialog. ESC and the backdrop go
+  // through the same path; a timeout guards against a missing animationend (reduced motion, hidden tab).
+  let closing = false;
+  function close() {
+    if (!dialog?.open || closing) return;
+    closing = true;
+    // Stop the video at once; the animation must not keep it playing.
+    player?.pause();
+    dialog.classList.add('is-closing');
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      dialog.classList.remove('is-closing');
+      closing = false;
+      dialog.close();
+    };
+    dialog.addEventListener('animationend', finish, { once: true });
+    window.setTimeout(finish, 450);
+  }
+
+  // ESC: take over the native close so that the slide-out can play (keydown first, `cancel` as the fallback).
+  dialog?.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      close();
+    }
+  });
+  dialog?.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    close();
+  });
+
+  // Runs after every close: pause, unlock the scroll, return the focus.
+  dialog?.addEventListener('close', () => {
+    player?.pause();
+    started = false;
+    document.documentElement.classList.remove('is-modal-open');
+    opener?.focus();
+    opener = null;
+  });
+
+  // Warm-up: prepare Video.js as soon as the visitor shows interest in the tab (hover, focus, touch).
+  openers.forEach((button) => {
+    for (const type of ['pointerenter', 'focus', 'touchstart'] as const) {
+      button.addEventListener(type, () => void ensurePlayer(), { once: true, passive: true });
+    }
+    button.addEventListener('click', () => open(button));
+  });
+  closer?.addEventListener('click', close);
+  // A click on the dimmed area around the video closes the modal (the inner content stops it).
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) close();
+  });
+  dialog?.querySelector('[data-modal-inner]')?.addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) close();
+  });
+</script>

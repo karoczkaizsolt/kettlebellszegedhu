@@ -77,7 +77,7 @@ Approved stack:
 - Astro with TypeScript.
 - Static HTML generation (no server rendering).
 - Minimal external dependencies. The only expected runtime dependency is the Spline runtime needed to play `scene.splinecode`. Any other dependency needs justification and approval.
-- Native HTML5 video player.
+- Video.js 8 (design-owner decision, milestone 03) as the video player in the modal; it is loaded only when the modal is first opened (dynamic import), the video itself only when playback starts. No other player library.
 - CSS-based animations and transitions for the surrounding UI.
 - Optimized, self-hosted fonts (woff2, `font-display: swap`, preload only the critical ones).
 
@@ -229,6 +229,8 @@ The page background is implemented in CSS and follows the dark and orange states
 - Provide a usable fallback if Spline cannot load (static layout, labels reachable, no broken UI).
 - **The scene was exported for WebGPU only** (the Spline runtime reports: "exported for WebGPU only ... Re-export with renderer 'Both' or 'WebGL 2'"). Browsers without a WebGPU adapter cannot render it. The page detects WebGPU before loading the runtime and falls back to the static layout (`data-scene-state="unsupported"`). Re-exporting the scene with renderer "Both" is recommended and is a design-owner decision; do not change the scene file without approval.
 - Respect `prefers-reduced-motion` for the surrounding CSS transitions.
+- Labels on phones/tablets (< 960 px) are two horizontally moving rows (`TagsMarquee.astro`, Figma mobile rows 1/2); desktop keeps the static grid.
+- State changes use shared timings (`--t-state`, `--ease-state`, `--t-lift`, `--ease-lift`): smooth interpolation, no bounce.
 
 The Spline scene must not compromise initial page rendering: load it after the first render, and reserve its space to avoid layout shift.
 
@@ -242,13 +244,13 @@ Clicking it opens a fullscreen modal based on the Figma frames `2148:396` (deskt
 
 ### Video player
 
-Use native HTML5 video with the optimized web version of `assets/video.mp4`. The video is not stored in Git (section 4); its URL comes from configuration.
+Use Video.js 8 (self-hosted npm package, loaded on first modal open) on top of a native `<video>` with the optimized web version of `assets/video.mp4`. The video is not stored in Git (section 4); its URL comes from configuration.
 
 Requirements:
 - Free implementation.
 - Minimal visual appearance.
 - No paid video services and no third-party embeds.
-- Avoid unnecessary player libraries.
+- No player library other than Video.js; minimal control set (play/pause, progress, volume, fullscreen), orange progress bar.
 - Provide play/pause and volume controls.
 - Support fullscreen playback.
 - Preserve responsive aspect ratio.

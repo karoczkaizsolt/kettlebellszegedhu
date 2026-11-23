@@ -1,0 +1,40 @@
+---
+// Mobile/tablet (< 960 px) version of the labels around the kettlebell (Figma mobile frames 2119:162 / 2119:148,
+// rows `row 1` / `row 2`): two rows of labels that move horizontally and loop without a seam. Texts as in the
+// mobile Figma frame. Desktop keeps the static `Tags` grid; this component is hidden from 960 px up.
+// Seamless loop: every row is the same group of labels repeated `copies` times and the track moves by exactly one
+// group (-100/copies %); the group carries its own trailing gap, so the joint is invisible. Only the first group is
+// exposed to assistive technology.
+const rows = [
+  {
+    direction: 'left',
+    duration: '34s',
+    copies: 3,
+    tags: ['mobilitás és hajlékonyság', 'ízületkímélő terhelés', 'kardió és állóképesség', 'testzsírcsökkentés'],
+  },
+  {
+    direction: 'right',
+    duration: '24s',
+    copies: 4,
+    tags: ['robbanékony erő', 'izomépítés', 'törzserő', 'fogáserő'],
+  },
+];
+---
+
+<div class="tags-marquee" data-tags-marquee>
+  {
+    rows.map((row) => (
+      <div class="marquee__row" data-direction={row.direction} style={`--marquee-duration: ${row.duration}; --marquee-copies: ${row.copies}`}>
+        <div class="marquee__track">
+          {Array.from({ length: row.copies }, (_, copy) => (
+            <ul class="marquee__group" aria-hidden={copy > 0 ? 'true' : undefined}>
+              {row.tags.map((tag) => (
+                <li class="tag">{tag}</li>
+              ))}
+            </ul>
+          ))}
+        </div>
+      </div>
+    ))
+  }
+</div>

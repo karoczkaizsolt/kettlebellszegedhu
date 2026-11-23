@@ -12,7 +12,7 @@ html {
   color: var(--light-gray);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  transition: background-color var(--t) var(--ease);
+  transition: background-color var(--t-state) var(--ease-state);
 }
 
 body {
@@ -92,11 +92,21 @@ a {
   min-height: max(100svh, 872px);
   overflow: hidden;
   background: var(--page-bg);
-  transition: background-color var(--t) var(--ease);
+  transition: background-color var(--t-state) var(--ease-state);
 }
 /* CSS page background: dark by default, warm orange in the active state (Figma "sample bg 1/2" were placeholders). */
-:root[data-state='active'] .stage {
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   background: linear-gradient(180deg, #22190c 0%, #5a3b14 42%, var(--brown) 100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-state) var(--ease-state);
+}
+:root[data-state='active'] .stage::before {
+  opacity: 1;
 }
 
 .scene {
@@ -153,7 +163,7 @@ a {
   line-height: normal;
   letter-spacing: -0.02em;
   color: var(--eyebrow-color);
-  transition: color var(--t) var(--ease);
+  transition: color var(--t-state) var(--ease-state);
 }
 
 .hero__headline {
@@ -175,26 +185,22 @@ a {
   margin-bottom: -18px;
   line-height: 34px;
   color: transparent;
-  background-image: url('../assets/figma/headline-texture-mobile.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-/* active state: the same texture with a 30% #805318 overlay (Figma gradient layer) */
-:root[data-state='active'] .hero__line--textured {
+  /* the texture with the active-state overlay (30% #805318, Figma gradient layer) on top; the overlay colour is a
+     registered property, so it fades in and out with the state instead of switching */
   background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
     url('../assets/figma/headline-texture-mobile.png');
   background-size: auto auto, cover;
   background-position: top left, center;
   background-repeat: repeat, no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: --headline-overlay var(--t-state) var(--ease-state);
 }
 
 .hero__line--accent {
   line-height: 48px;
   color: var(--headline-accent);
-  transition: color var(--t) var(--ease);
+  transition: color var(--t-state) var(--ease-state);
 }
 
 .logo {
@@ -204,7 +210,7 @@ a {
   background-color: var(--eyebrow-color);
   -webkit-mask: url('/img/strongfirst-logo.svg') center / 100% 100% no-repeat;
   mask: url('/img/strongfirst-logo.svg') center / 100% 100% no-repeat;
-  transition: background-color var(--t) var(--ease);
+  transition: background-color var(--t-state) var(--ease-state);
 }
 
 /* ------------------------------------------------------------------- tags */
@@ -220,11 +226,11 @@ a {
   gap: 8px;
   opacity: var(--tags-opacity);
   visibility: var(--tags-visibility);
-  transition: opacity var(--t) var(--ease), visibility 0s linear var(--t);
+  transition: opacity var(--t-state) var(--ease-state), visibility 0s linear var(--t-state);
   pointer-events: none;
 }
 :root[data-state='active'] .tags {
-  transition: opacity var(--t) var(--ease), visibility 0s;
+  transition: opacity var(--t-state) var(--ease-state), visibility 0s;
 }
 .tag {
   display: flex;
@@ -239,6 +245,95 @@ a {
   letter-spacing: -0.02em;
   white-space: nowrap;
   color: var(--light-gray);
+}
+
+/* ------------------------------------------- tags, phones/tablets: two moving rows (Figma mobile rows 1 and 2) */
+.tags-marquee {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  /* just above the kettlebell's handle: the two rows (65px) end where the lifted bell begins (about 39% of the
+     height); on short screens they never go higher than the hero allows */
+  top: max(262px, calc(39vh - 71px));
+  display: none;
+  flex-direction: column;
+  gap: 15px; /* Figma: rows 40px apart, 25px tall */
+  overflow: hidden;
+  opacity: var(--tags-opacity);
+  visibility: var(--tags-visibility);
+  transition: opacity var(--t-state) var(--ease-state), visibility 0s linear var(--t-state);
+  pointer-events: none;
+}
+:root[data-state='active'] .tags-marquee {
+  transition: opacity var(--t-state) var(--ease-state), visibility 0s;
+}
+.marquee__row {
+  overflow: hidden;
+  height: 25px;
+}
+.marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-left var(--marquee-duration, 30s) linear infinite paused;
+}
+.marquee__row[data-direction='right'] .marquee__track {
+  animation-name: marquee-right;
+}
+/* the rows only move while the labels are visible (active state) */
+:root[data-state='active'] .marquee__track {
+  animation-play-state: running;
+}
+.marquee__group {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 0 8px 0 0; /* the trailing gap belongs to the group: the loop joint is invisible */
+  margin: 0;
+  list-style: none;
+}
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% / var(--marquee-copies, 2)));
+  }
+}
+@keyframes marquee-right {
+  from {
+    transform: translateX(calc(-100% / var(--marquee-copies, 2)));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (max-width: 959.98px) {
+  .tags {
+    display: none;
+  }
+  .tags-marquee {
+    display: flex;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee__track {
+    animation: none;
+    width: auto;
+    justify-content: center;
+  }
+  .marquee__group {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 16px;
+  }
+  .marquee__group[aria-hidden='true'] {
+    display: none;
+  }
+  .marquee__row {
+    height: auto;
+  }
 }
 
 /* ------------------------------------------------------------ info banner */
@@ -258,8 +353,8 @@ a {
   border-radius: 6px;
   background: var(--panel-bg);
   color: var(--panel-text);
-  transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease),
-    color var(--t) var(--ease), transform var(--t) var(--ease);
+  transition: background-color var(--t-state) var(--ease-state), border-color var(--t-state) var(--ease-state),
+    color var(--t-state) var(--ease-state), transform var(--t-lift) var(--ease-lift);
 }
 
 .banner__profile {
@@ -306,7 +401,7 @@ a {
   width: 100%;
   height: 1px;
   background: var(--panel-divider);
-  transition: background-color var(--t) var(--ease);
+  transition: background-color var(--t-state) var(--ease-state);
 }
 .banner__text {
   font-size: calc(14px + var(--fs-boost));
@@ -404,8 +499,61 @@ a {
   line-height: calc(16px + var(--fs-boost));
   letter-spacing: -0.02em;
   text-align: center;
-  transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease),
-    color var(--t) var(--ease);
+  cursor: pointer;
+  transition: background-color var(--t-state) var(--ease-state), border-color var(--t-state) var(--ease-state),
+    color var(--t-state) var(--ease-state), translate 0.5s var(--ease-state);
+  /* From time to time the tab slides in from the viewport edge, takes the hover colour and returns (the `translate`
+     property, so it never interferes with the positioning `transform`). Phone: up from the bottom edge; desktop:
+     in from the right. */
+  --tab-nudge: 0 -5px;
+  animation: video-tab-nudge var(--tab-nudge-cycle, 9s) var(--ease-state) var(--tab-nudge-delay, 5s) infinite;
+}
+/* The strip that the slide-in uncovers (between the moved tab and the viewport edge) is part of the tab: it
+   inherits the tab's own, possibly animated, background, so the colour covers the whole extended surface. */
+.video-tab::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: 0;
+  top: 100%;
+  height: 24px;
+  box-sizing: border-box;
+  border-left: 1px solid var(--tab-border);
+  border-right: 1px solid var(--tab-border);
+  background-color: inherit;
+  pointer-events: none;
+  transition: border-color var(--t-state) var(--ease-state);
+}
+@keyframes video-tab-nudge {
+  0%,
+  15%,
+  100% {
+    translate: 0 0;
+    background-color: var(--tab-bg);
+  }
+  4%,
+  10% {
+    translate: var(--tab-nudge);
+    background-color: var(--tab-bg-hover);
+  }
+}
+/* Hover / focus / press = the same look as the automatic slide-in. When the animation is removed the values
+   transition from where the animation was, so the two never fight. */
+.video-tab:focus-visible,
+.video-tab:active {
+  animation: none;
+  translate: var(--tab-nudge);
+  background-color: var(--tab-bg-hover);
+}
+@media (hover: hover) {
+  .video-tab:hover {
+    animation: none;
+    translate: var(--tab-nudge);
+    background-color: var(--tab-bg-hover);
+  }
+}
+:root.is-modal-open .video-tab {
+  animation: none;
 }
 .video-tab__icon {
   position: relative;
@@ -418,7 +566,7 @@ a {
   inset: 0;
   width: 24px;
   height: 24px;
-  transition: opacity var(--t) var(--ease);
+  transition: opacity var(--t-state) var(--ease-state);
 }
 .video-tab__icon .icon-active {
   opacity: 0;
@@ -503,8 +651,10 @@ a {
   bottom: 10px;
   display: flex;
   align-items: center;
+  pointer-events: none; /* the wide container must not cover the video tab on phones; the icon and the text re-enable it */
 }
 .credit__btn {
+  pointer-events: auto;
   display: block;
   flex: none;
   width: 24px;
@@ -556,6 +706,10 @@ a {
 }
 
 /* ------------------------------------------------------------ video modal */
+:root.is-modal-open,
+:root.is-modal-open body {
+  overflow: hidden; /* background scroll lock while the modal is open */
+}
 .modal {
   width: 100%;
   max-width: none;
@@ -587,6 +741,56 @@ a {
   align-items: center;
   gap: 32px;
   width: 100%;
+  box-sizing: border-box;
+  padding: 0 16px; /* phones: the video follows the viewport width with 16px side spacing */
+}
+.modal__video {
+  border-radius: 6px;
+  overflow: hidden;
+}
+/* Slide in from the bottom of the viewport and out again (opposite direction). Phones/tablets: the whole sheet
+   (the dialog has its own background there); desktop: the content over the blurred backdrop. */
+.modal[open] {
+  animation: modal-in 0.4s cubic-bezier(0.22, 0.8, 0.28, 1) both;
+}
+.modal[open]::backdrop {
+  animation: modal-fade-in 0.4s var(--ease-state) both;
+}
+.modal.is-closing {
+  animation: modal-out 0.3s cubic-bezier(0.5, 0, 0.75, 0.4) both;
+}
+.modal.is-closing::backdrop {
+  animation: modal-fade-out 0.3s var(--ease-state) both;
+}
+@keyframes modal-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes modal-out {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0.4;
+  }
+}
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes modal-fade-out {
+  to {
+    opacity: 0;
+  }
 }
 .modal__figure {
   display: flex;
@@ -625,9 +829,9 @@ a {
 .modal__caption {
   width: 100%;
   padding: 0 16px;
-  font-weight: 500;
-  font-size: calc(9px + var(--fs-boost));
-  line-height: calc(12px + var(--fs-boost));
+  font-weight: 400; /* Body 1: Sometype Mono Regular 14/22, -2% */
+  font-size: calc(14px + var(--fs-boost));
+  line-height: calc(22px + var(--fs-boost));
   letter-spacing: -0.02em;
   text-align: center;
   color: var(--caption-gray);
@@ -716,9 +920,6 @@ a {
   .hero__line--textured {
     margin-bottom: calc(var(--h0-tablet) * -0.4583);
     line-height: calc(var(--h0-tablet) * 1.2083);
-    background-image: url('../assets/figma/headline-texture-desktop.png');
-  }
-  :root[data-state='active'] .hero__line--textured {
     background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
       url('../assets/figma/headline-texture-desktop.png');
   }
@@ -755,6 +956,17 @@ a {
   }
 }
 
+/* Tablet and desktop: the video is 800px wide (responsive maximum), 16:9-like as in the Figma desktop modal. */
+@media (min-width: 768px) {
+  .modal__inner {
+    width: min(800px, calc(100% - 64px));
+    padding: 0;
+  }
+  .modal__figure .modal__video {
+    aspect-ratio: 803 / 452;
+    border-radius: 8px;
+  }
+}
 @media (min-width: 960px) {
   .br-mobile {
     display: none;
@@ -780,9 +992,6 @@ a {
   .hero__line--textured {
     margin-bottom: calc(-22px * var(--h0-scale));
     line-height: calc(58px * var(--h0-scale));
-    background-image: url('../assets/figma/headline-texture-desktop.png');
-  }
-  :root[data-state='active'] .hero__line--textured {
     background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
       url('../assets/figma/headline-texture-desktop.png');
   }
@@ -816,7 +1025,8 @@ a {
   .tag:nth-child(8) { grid-column: 2; grid-row: 4; justify-self: start; } /* fogáserő */
 
   .banner {
-    bottom: calc(37px + var(--panel-shift)); /* Figma: panel top stays at y 679 (default) / 639 (active) in the 834px frame */
+    bottom: 37px; /* Figma: panel top at y 679 (default) / 639 (active) in the 834px frame; the lift is a transform */
+    transform: translateX(-50%) translateY(calc(var(--panel-shift) * -1));
     flex-direction: row;
     gap: 32px;
     width: max-content;
@@ -862,27 +1072,240 @@ a {
     border: 1px solid var(--tab-border);
     border-right: 0;
     border-radius: 6px 0 0 6px;
+    --tab-nudge: -10px 0;
+  }
+  .video-tab::after {
+    left: 100%;
+    right: auto;
+    top: -1px;
+    bottom: -1px;
+    width: 24px;
+    height: auto;
+    border: 0;
+    border-top: 1px solid var(--tab-border);
+    border-bottom: 1px solid var(--tab-border);
   }
 
-  .modal__inner {
-    width: 803px;
-    max-width: calc(100% - 32px);
-  }
-  .modal__figure .modal__video {
-    aspect-ratio: 803 / 452;
-    border-radius: 8px;
-    overflow: hidden;
-  }
   .modal {
     background: transparent;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .video-tab {
+    animation: none;
+  }
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* ------------------------------------------------------------ Video.js skin (minimal, dark, orange progress) */
+.modal .video-js.vjs-vt {
+  width: 100%;
+  height: 100%;
+  background: var(--black);
+  color: var(--caption-gray);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.modal .vjs-vt .vjs-poster {
+  background-size: cover;
+}
+.modal .vjs-vt .modal__vignette {
+  z-index: 1; /* picture only: above video and poster, below the controls */
+}
+.modal .vjs-vt .vjs-control-bar,
+.modal .vjs-vt .vjs-big-play-button,
+.modal .vjs-vt .vjs-error-display {
+  z-index: 3;
+}
+.modal .vjs-vt .vjs-control-bar {
+  height: 44px;
+  padding: 0 8px;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0));
+}
+.modal .vjs-vt .vjs-button > .vjs-icon-placeholder::before,
+.modal .vjs-vt .vjs-control::before {
+  font-size: 22px;
+  line-height: 44px;
+  color: var(--caption-gray);
+  transition: color 0.2s var(--ease);
+}
+.modal .vjs-vt .vjs-button:hover > .vjs-icon-placeholder::before,
+.modal .vjs-vt .vjs-button:focus-visible > .vjs-icon-placeholder::before {
+  color: var(--white);
+}
+.modal .vjs-vt .vjs-control:focus-visible {
+  outline: 2px solid var(--light-gray);
+  outline-offset: -2px;
+  text-shadow: none;
+}
+.modal .vjs-vt .vjs-progress-control .vjs-progress-holder {
+  height: 3px;
+  margin: 0 8px;
+  background: rgba(224, 224, 224, 0.25);
+  transition: height 0.15s var(--ease);
+}
+.modal .vjs-vt .vjs-progress-control:hover .vjs-progress-holder,
+.modal .vjs-vt .vjs-progress-control:focus-within .vjs-progress-holder {
+  height: 5px;
+  font-size: 12px;
+}
+.modal .vjs-vt .vjs-load-progress,
+.modal .vjs-vt .vjs-load-progress div {
+  background: rgba(224, 224, 224, 0.25);
+}
+.modal .vjs-vt .vjs-play-progress {
+  background: var(--brown); /* orange progress bar */
+}
+.modal .vjs-vt .vjs-big-play-button {
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border: 1px solid var(--light-gray-20);
+  border-radius: 50%;
+  background: rgba(20, 20, 20, 0.6);
+  line-height: 62px;
+  transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.modal .vjs-vt:hover .vjs-big-play-button,
+.modal .vjs-vt .vjs-big-play-button:focus {
+  background: rgba(20, 20, 20, 0.8);
+  border-color: var(--brown);
+}
+
+@media (min-width: 960px) {
+  .modal[open],
+  .modal.is-closing {
+    animation: none;
+  }
+  .modal[open] .modal__inner {
+    animation: modal-in 0.4s cubic-bezier(0.22, 0.8, 0.28, 1) both;
+  }
+  .modal.is-closing .modal__inner {
+    animation: modal-out 0.3s cubic-bezier(0.5, 0, 0.75, 0.4) both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal[open],
+  .modal.is-closing,
+  .modal[open] .modal__inner,
+  .modal.is-closing .modal__inner {
+    animation-name: modal-fade-in;
+  }
+  .modal.is-closing,
+  .modal.is-closing .modal__inner {
+    animation-name: modal-fade-out;
+  }
+}
+
+/* ---- Video.js controls: one consistent system (checked against the measured component geometry) ----
+   Bar height 44px; every control is centred on the bar's centre line (y = 22px). Buttons are 44x44 with a 22px
+   icon of the same icon font. The progress line (3px) and the volume line (3px) are centred on that same line,
+   and both handles are real 10px circles centred on their lines (the stock handles are font glyphs whose vertical
+   position depends on the glyph metrics, which caused the offset). All three tooltips (time, hover time,
+   volume) share one typography. */
+.modal .vjs-vt .vjs-control-bar {
+  align-items: center;
+}
+.modal .vjs-vt .vjs-control-bar .vjs-button,
+.modal .vjs-vt .vjs-control-bar .vjs-mute-control {
+  width: 44px;
+  height: 44px;
+}
+.modal .vjs-vt .vjs-control-bar .vjs-volume-panel {
+  height: 44px;
+  align-items: center;
+}
+.modal .vjs-vt .vjs-progress-control {
+  display: flex;
+  align-items: center;
+  height: 44px;
+}
+.modal .vjs-vt .vjs-progress-control .vjs-progress-holder {
+  flex: auto;
+  height: 3px;
+  margin: 0 8px;
+}
+.modal .vjs-vt .vjs-progress-control:hover .vjs-progress-holder,
+.modal .vjs-vt .vjs-progress-control:focus-within .vjs-progress-holder {
+  height: 3px; /* no thickening on hover: the line stays the same weight as the volume line */
+}
+/* Volume line: same 3px line, same centre line as the progress line (stock: 0.3em tall, 1.35em from the top). */
+.modal .vjs-vt .vjs-volume-panel .vjs-volume-control.vjs-volume-horizontal {
+  height: 44px;
+}
+.modal .vjs-vt .vjs-volume-panel .vjs-volume-bar.vjs-slider-horizontal {
+  position: relative;
+  height: 3px;
+  margin: 0 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+/* Handles: exact circles on the line */
+.modal .vjs-vt .vjs-play-progress::before,
+.modal .vjs-vt .vjs-volume-level::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  font-size: 0;
+  line-height: 0;
+  text-shadow: none;
+}
+.modal .vjs-vt .vjs-play-progress::before {
+  background: var(--brown);
+}
+.modal .vjs-vt .vjs-volume-level::before {
+  background: var(--light-gray);
+}
+/* Tooltips: ONE typography for time, hover time and volume. The stock CSS shrinks the time tooltip to 0.6em
+   while the progress bar is hovered but shows the volume tooltip at 1em, which made them differ; the selectors
+   below are as specific as the stock hover rules so the same 12px/16px applies in every state. */
+.modal .video-js.vjs-vt .vjs-time-tooltip,
+.modal .video-js.vjs-vt .vjs-progress-control:hover .vjs-time-tooltip,
+.modal .video-js.vjs-vt .vjs-progress-control .vjs-mouse-display .vjs-time-tooltip,
+.modal .video-js.vjs-vt .vjs-volume-tooltip,
+.modal .video-js.vjs-vt .vjs-volume-control:hover .vjs-volume-tooltip {
+  top: auto;
+  bottom: 16px;
+  height: auto;
+  padding: 3px 8px;
+  border-radius: 2px;
+  background-color: var(--dark-gray);
+  color: var(--caption-gray);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: -0.02em;
+}
+/* Volume: same line weight, colours and centre line as the progress line; a usable length when expanded */
+.modal .vjs-vt .vjs-volume-panel .vjs-volume-control.vjs-volume-horizontal {
+  width: 100px;
+}
+.modal .vjs-vt .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-hover,
+.modal .vjs-vt .vjs-volume-panel.vjs-volume-panel-horizontal:active,
+.modal .vjs-vt .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-slider-active {
+  width: 144px;
+}
+.modal .vjs-vt .vjs-volume-bar.vjs-slider {
+  background-color: rgba(224, 224, 224, 0.25);
+}
+.modal .vjs-vt .vjs-volume-panel .vjs-volume-level {
+  top: 0;
+  height: 3px;
+  background-color: var(--light-gray);
+}
+.modal .video-js.vjs-vt .vjs-time-tooltip:empty,
+.modal .video-js.vjs-vt .vjs-volume-tooltip:empty {
+  display: none; /* no empty tooltip box before the first pointer move */
 }

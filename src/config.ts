@@ -33,6 +33,16 @@ export const promoBar = {
 export const splineSceneUrl = '/spline/scene-v4.splinecode';
 
 /**
+ * The scene owns the lift/colour interaction; the page only mirrors its `kettlebellLifted` variable into the shared
+ * page state (`data-state` on <html>). The runtime has no change event for variables, so it is read at `pollMs`
+ * intervals (cheap, paused while the tab is hidden) and right after the scene's own hover/tap events.
+ */
+export const sceneState = {
+  variableName: 'kettlebellLifted',
+  pollMs: 80,
+} as const;
+
+/**
  * Phones (below `maxWidth`): the scene composition is shown smaller by moving the scene camera back at runtime
  * (the .splinecode file is untouched). The canvas stays full size, so the scene's own backdrop fills the viewport.
  * `dollyBack` is the distance (scene units) the camera is pulled back along its viewing direction; 365 makes the

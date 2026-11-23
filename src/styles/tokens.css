@@ -1,3 +1,9 @@
+@property --headline-overlay {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
 /* Design tokens, taken from the Figma variables (file FMm8M3VGmIyzVpmJUXe9Oi). */
 :root {
   /* colours */
@@ -29,6 +35,12 @@
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-in: cubic-bezier(0.5, 0, 0.75, 0.3);
   --t: 0.4s;
+  /* page state change (default <-> active): colours and fades share one duration and easing; the lift uses a
+     slightly longer ease-out (no overshoot, no bounce) */
+  --t-state: 0.9s;
+  --ease-state: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-lift: 1.1s;
+  --ease-lift: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   /* ---- state-dependent values (default state) ---- */
   --promo-bg: #b8b8b8; /* promo bar: the muted, darker tone of the former gradient; black text stays readable (about 10:1) */
@@ -41,6 +53,7 @@
   --panel-text: var(--light-gray);
   --panel-divider: var(--light-gray-20);
   --tab-bg: transparent;
+  --tab-bg-hover: rgba(224, 224, 224, 0.12);
   --tab-border: var(--light-gray-20);
   --tab-text: var(--caption-gray);
   --tags-opacity: 0;
@@ -59,6 +72,7 @@
   --panel-text: var(--black);
   --panel-divider: var(--black-20);
   --tab-bg: var(--brown);
+  --tab-bg-hover: #a8610f; /* the active orange, 10% darker */
   --tab-border: var(--black-20);
   --tab-text: var(--black);
   --tags-opacity: 1;
