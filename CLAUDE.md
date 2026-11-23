@@ -298,7 +298,7 @@ Design owner's update (supersedes the earlier 5 s / 6 s / 45 s repeat and the on
 - Fixed overlay at the top of the viewport.
 - Must not push or shift the underlying content.
 - Must not cause layout shifts (CLS).
-- Match Figma dimensions, typography and colors (current Figma: white background, no border, 24px orange bell icon `assets` `src/assets/figma/icon-notifications-active.svg`, 16px gap, 8px/16px padding, Sometype Mono 12px black, letter-spacing -0.24px, first sentence SemiBold, second Regular; 40 px high on desktop; on narrow screens the text wraps to two lines).
+- Match Figma dimensions, typography and colors (current Figma: horizontal gradient background (transparent white at 15.215 %, white at 51.442 %, transparent at 85.226 %; on mobile the white plateau is widened), no border, 24px orange bell icon `assets` `src/assets/figma/icon-notifications-active.svg`, 16px gap, 8px/16px padding, Sometype Mono black (14px by design-owner decision; Figma 12px), letter-spacing -0.02em, first sentence SemiBold, second Regular; 40 px high on desktop; on narrow screens the text wraps to two lines).
 - Work on desktop and mobile.
 - Use subtle slide-down and fade-in animation.
 - Use fade-out and slide-up when disappearing.

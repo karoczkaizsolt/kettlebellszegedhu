@@ -20,8 +20,8 @@ body {
   min-height: 100svh;
   font-family: var(--font-mono);
   font-weight: 400;
-  font-size: 10px;
-  line-height: 16px;
+  font-size: calc(10px + var(--fs-boost));
+  line-height: calc(16px + var(--fs-boost));
   letter-spacing: -0.02em;
   background: transparent;
   overflow-x: hidden;
@@ -146,8 +146,8 @@ a {
   display: block;
   width: min-content;
   min-width: 100%;
-  font-size: 14px;
-  line-height: 17px;
+  font-size: calc(16px + var(--fs-boost));
+  line-height: normal;
   letter-spacing: -0.02em;
   color: var(--eyebrow-color);
   transition: color var(--t) var(--ease);
@@ -231,8 +231,8 @@ a {
   padding: 4px 8px;
   border-bottom: 1px solid var(--light-gray-20);
   font-style: italic;
-  font-size: 12px;
-  line-height: 14px;
+  font-size: calc(14px + var(--fs-boost));
+  line-height: calc(22px + var(--fs-boost));
   letter-spacing: -0.02em;
   white-space: nowrap;
   color: var(--light-gray);
@@ -243,7 +243,7 @@ a {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: 54px;
+  bottom: 64px; /* 48px video tab + 16px gap (Figma mobile) */
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
@@ -274,8 +274,8 @@ a {
 }
 .banner__avatar {
   flex: none;
-  width: 88px;
-  height: 88px;
+  width: 101px;
+  height: 100px;
   border-radius: 4px;
   object-fit: cover;
   object-position: bottom;
@@ -284,17 +284,18 @@ a {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: max-content;
+  width: 204px; /* Figma mobile: 101px avatar + 8px gap + 204px = the 313px profile width */
 }
 .banner__name {
   font-weight: 600;
-  font-size: 14px;
-  line-height: normal;
+  font-size: calc(16px + var(--fs-boost));
+  line-height: calc(20px + var(--fs-boost));
   letter-spacing: -0.02em;
 }
 .banner__role {
-  font-size: 12px;
-  line-height: 20px;
+  font-size: calc(14px + var(--fs-boost));
+  line-height: calc(22px + var(--fs-boost));
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 .banner__divider {
@@ -305,8 +306,8 @@ a {
   transition: background-color var(--t) var(--ease);
 }
 .banner__text {
-  font-size: 12px;
-  line-height: 20px;
+  font-size: calc(14px + var(--fs-boost));
+  line-height: calc(22px + var(--fs-boost));
   letter-spacing: -0.02em;
 }
 .banner__actions {
@@ -327,8 +328,8 @@ a {
   border: 1px solid transparent;
   border-radius: 2px;
   font-weight: 600;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: calc(14px + var(--fs-boost));
+  line-height: calc(16px + var(--fs-boost));
   letter-spacing: -0.02em;
   white-space: nowrap;
   transition: background-color 0.2s var(--ease), color 0.2s var(--ease), box-shadow 0.2s var(--ease),
@@ -388,7 +389,7 @@ a {
   justify-content: center;
   gap: 4px;
   width: min(330px, calc(100% - 32px));
-  height: 38px;
+  height: 48px; /* Figma mobile video tab */
   padding: 8px;
   border: 1px solid var(--tab-border);
   border-bottom: 0;
@@ -396,8 +397,8 @@ a {
   background: var(--tab-bg);
   color: var(--tab-text);
   font-weight: 600;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: calc(14px + var(--fs-boost));
+  line-height: calc(16px + var(--fs-boost));
   letter-spacing: -0.02em;
   text-align: center;
   transition: background-color var(--t) var(--ease), border-color var(--t) var(--ease),
@@ -443,11 +444,17 @@ a {
   box-sizing: border-box;
   min-height: 36px;
   padding: 8px 16px;
-  background: var(--white);
+  /* Figma gradient: left to right, transparent white at 15.215 %, white at 51.442 %, transparent at 85.226 % */
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 15.215%,
+    #fff 51.442%,
+    rgba(255, 255, 255, 0) 85.226%
+  );
   color: var(--black);
   font-weight: 400;
-  font-size: 12px;
-  line-height: 20px;
+  font-size: calc(14px + var(--fs-boost));
+  line-height: calc(20px + var(--fs-boost));
   letter-spacing: -0.02em;
   text-align: center;
   text-wrap: balance;
@@ -473,7 +480,14 @@ a {
 }
 .promo strong {
   font-weight: 600;
-  line-height: 16px;
+  line-height: calc(16px + var(--fs-boost));
+}
+/* Mobile (no Figma frame): the text fills almost the whole bar, so the white plateau is widened and only the outer
+   6 % fade; with the desktop stops the black text would sit on the dark page at the sides. */
+@media (max-width: 959.98px) {
+  .promo {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #fff 6%, #fff 94%, rgba(255, 255, 255, 0) 100%);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .promo,
@@ -513,8 +527,8 @@ a {
 .credit__text {
   padding-left: 8px; /* the gap to the icon belongs to the text, so hovering across it keeps it open */
   font-weight: 500;
-  font-size: 10px;
-  line-height: 12px;
+  font-size: calc(10px + var(--fs-boost));
+  line-height: calc(12px + var(--fs-boost));
   letter-spacing: -0.02em;
   text-align: left;
   color: var(--white);
@@ -616,8 +630,8 @@ a {
   width: 100%;
   padding: 0 16px;
   font-weight: 500;
-  font-size: 9px;
-  line-height: 12px;
+  font-size: calc(9px + var(--fs-boost));
+  line-height: calc(12px + var(--fs-boost));
   letter-spacing: -0.02em;
   text-align: center;
   color: var(--caption-gray);
@@ -629,7 +643,7 @@ a {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  font-size: 10px;
+  font-size: calc(10px + var(--fs-boost));
   text-align: center;
   color: var(--caption-gray);
 }
@@ -666,6 +680,34 @@ a {
 }
 
 /* ================================================================ desktop */
+/* Tablet (600-959px): the mobile layout, but the profile card and the video CTA use the available width
+   (704px max at 768px) instead of the fixed 330px phone width; the two buttons share the card width. */
+@media (min-width: 600px) and (max-width: 959.98px) {
+  .banner,
+  .video-tab {
+    width: min(704px, calc(100% - 64px));
+  }
+  .banner__actions .btn {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+}
+
+/* Phones (below 600px): the contact buttons show text only. Size, padding and text stay as they were. */
+@media (max-width: 599.98px) {
+  .btn img {
+    display: none !important;
+  }
+}
+/* From 360px up the buttons keep the width they had with the icons (the e-mail one is fixed at 147px). Below that
+   (320px) the 270px card cannot hold both at that width, so they shrink to their text. */
+@media (min-width: 360px) and (max-width: 599.98px) {
+  .btn--primary {
+    min-width: 157.5px;
+    justify-content: center;
+  }
+}
+
 @media (min-width: 960px) {
   .br-mobile {
     display: none;
@@ -683,12 +725,14 @@ a {
     width: max-content;
     max-width: calc(100% - 32px);
   }
+  /* H0 headline, desktop only: Figma 48px / 58px / overlap -22px, scaled together by --h0-scale (tokens.css) so the
+     overlapping two-line layout keeps its proportions. */
   .hero__headline {
-    font-size: 48px;
+    font-size: calc(48px * var(--h0-scale));
   }
   .hero__line--textured {
-    margin-bottom: -22px;
-    line-height: 58px;
+    margin-bottom: calc(-22px * var(--h0-scale));
+    line-height: calc(58px * var(--h0-scale));
     background-image: url('../assets/figma/headline-texture-desktop.png');
   }
   :root[data-state='active'] .hero__line--textured {
@@ -696,7 +740,7 @@ a {
       url('../assets/figma/headline-texture-desktop.png');
   }
   .hero__line--accent {
-    line-height: 58px;
+    line-height: calc(58px * var(--h0-scale));
   }
 
   /* tags: two columns around the kettlebell (Figma: col 1 at x=336, col 2 at x=786 in a 1280 frame) */
@@ -725,7 +769,7 @@ a {
   .tag:nth-child(8) { grid-column: 2; grid-row: 4; justify-self: start; } /* fogáserő */
 
   .banner {
-    bottom: calc(49px + var(--panel-shift));
+    bottom: calc(37px + var(--panel-shift)); /* Figma: panel top stays at y 679 (default) / 639 (active) in the 834px frame */
     flex-direction: row;
     gap: 32px;
     width: max-content;
@@ -739,10 +783,13 @@ a {
     flex: 0 1 auto;
     min-width: 0;
   }
+  .banner__details {
+    width: max-content;
+  }
   .banner__divider {
     flex: none;
     width: 1px;
-    height: 88px;
+    height: 100px;
   }
   .banner__text {
     flex: 0 1 430px;
@@ -764,7 +811,7 @@ a {
     flex-direction: column;
     width: auto;
     height: auto;
-    padding: 8px 16px;
+    padding: 16px; /* Figma desktop video tab */
     border: 1px solid var(--tab-border);
     border-right: 0;
     border-radius: 6px 0 0 6px;

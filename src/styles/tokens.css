@@ -19,6 +19,12 @@
   --font-display: 'Basement Grotesque', 'Arial Black', Impact, sans-serif;
   --font-mono: 'Sometype Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
+  /* global text size boost: added to every body/UI font size and line height (not the hero headline). 0px = Figma sizes. */
+  --fs-boost: 0px; /* 0px = exact Figma sizes; raise to enlarge all text at once */
+
+  /* H0 headline scale, desktop only (>=960px). 1 = Figma size (48px); 1.19 = about +9px (+7pt). Mobile ignores it. */
+  --h0-scale: 1.19;
+
   /* motion */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-in: cubic-bezier(0.5, 0, 0.75, 0.3);
