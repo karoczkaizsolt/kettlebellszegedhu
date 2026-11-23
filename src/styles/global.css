@@ -1350,15 +1350,8 @@ a {
   line-height: 16px;
   letter-spacing: -0.02em;
 }
-/* Volume: same line weight, colours and centre line as the progress line; a usable length when expanded */
-.modal .vjs-vt .vjs-volume-panel .vjs-volume-control.vjs-volume-horizontal {
-  width: 100px;
-}
-.modal .vjs-vt .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-hover,
-.modal .vjs-vt .vjs-volume-panel.vjs-volume-panel-horizontal:active,
-.modal .vjs-vt .vjs-volume-panel.vjs-volume-panel-horizontal.vjs-slider-active {
-  width: 144px;
-}
+/* Volume: same line weight, colours and centre line as the progress line (see the block at the end of the file
+   for the inline expand / collapse). */
 .modal .vjs-vt .vjs-volume-bar.vjs-slider {
   background-color: rgba(224, 224, 224, 0.25);
 }
@@ -1427,5 +1420,64 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .modal__caption {
     transition: opacity 0.01ms;
+  }
+}
+
+/* ---- Volume control: inline expand (width + opacity only) ----
+   The icon is always visible. The panel always reserves the icon (44px) plus the slider's own place (--vol-w), so
+   expanding or collapsing never moves the icon or any other control; only the slider's width and opacity animate
+   (200ms, ease-out, the same on the way back). Mouse: hover or keyboard focus opens it; touch: tap on the icon
+   toggles it (class set by VideoModal.astro), a tap elsewhere or on the icon again closes it. The Video.js volume
+   logic (slider, mute, keys, level) is untouched; the stock widths, transitions and the small-layout rule that hides
+   the slider are overridden (!important or a doubled `.vjs-vt` where the stock selectors are as specific and load later). */
+.modal .video-js.vjs-vt {
+  --vol-w: 100px;
+}
+@media (max-width: 767.98px) {
+  .modal .video-js.vjs-vt {
+    --vol-w: 72px;
+  }
+}
+.modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel.vjs-volume-panel-horizontal {
+  width: calc(44px + var(--vol-w)) !important;
+  transition: none !important;
+}
+.modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel .vjs-volume-control.vjs-volume-horizontal {
+  display: flex !important; /* the stock small-layout rules hide it */
+  position: relative;
+  visibility: visible;
+  flex: none;
+  width: 0;
+  height: 44px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: width 200ms ease-out, opacity 200ms ease-out !important;
+}
+.modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel .vjs-volume-control .vjs-volume-bar.vjs-slider-horizontal {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel.vjs-hover .vjs-volume-control.vjs-volume-horizontal,
+  .modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel:focus-within .vjs-volume-control.vjs-volume-horizontal,
+  .modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel .vjs-volume-control.vjs-volume-horizontal.vjs-slider-active {
+    width: var(--vol-w);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel.vt-volume-open .vjs-volume-control.vjs-volume-horizontal,
+  .modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel .vjs-volume-control.vjs-volume-horizontal.vjs-slider-active {
+    width: var(--vol-w);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal .video-js.vjs-vt.vjs-vt .vjs-volume-panel .vjs-volume-control.vjs-volume-horizontal {
+    transition: none !important;
   }
 }

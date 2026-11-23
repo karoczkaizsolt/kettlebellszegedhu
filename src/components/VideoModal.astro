@@ -90,6 +90,30 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
       const el = player.el();
       const controls = el.querySelector('.vjs-control-bar');
       if (vignette) el.insertBefore(vignette, controls);
+
+      // Touch devices have no hover: a tap on the volume icon opens the slider (instead of muting), another tap on
+      // the icon or a tap anywhere outside the volume panel closes it; while the slider is used it stays open.
+      // Only this open/closed class is added here; level, mute and keys stay Video.js's own volume handling.
+      const panel = (player.getChild('controlBar') as any)?.getChild('volumePanel') as any;
+      const muteToggle = panel?.getChild('muteToggle') as any;
+      const panelEl = panel?.el() as HTMLElement | undefined;
+      const touch = window.matchMedia('(hover: none), (pointer: coarse)');
+      if (panelEl && muteToggle) {
+        const stockClick = muteToggle.handleClick.bind(muteToggle);
+        let lastTap = 0;
+        muteToggle.handleClick = (e: Event) => {
+          if (!touch.matches) return stockClick(e); // mouse: the stock mute toggle, unchanged
+          // Video.js reports a touch as 'tap' and the browser follows with 'click': count it once
+          const now = performance.now();
+          if (now - lastTap < 500) return;
+          lastTap = now;
+          panelEl.classList.toggle('vt-volume-open');
+        };
+        document.addEventListener('pointerdown', (e) => {
+          if (!panelEl.contains(e.target as Node)) panelEl.classList.remove('vt-volume-open');
+        });
+        dialog?.addEventListener('close', () => panelEl.classList.remove('vt-volume-open'));
+      }
       return player;
     })();
     return loading;

@@ -104,3 +104,19 @@
 - **Desktop cursor:** while the scene reports the active state (pointer inside its hitbox) the canvas gets `cursor: pointer` (mouse devices only: `@media (hover: hover) and (pointer: fine)`); it returns to default when the state goes back. Touch devices unchanged.
 - **Cause of the missing cursor:** the Spline runtime places an empty transparent "HTML content" iframe (no content, no controls) over the canvas; the browser takes the cursor from the iframe. It is now click-through (`pointer-events: none !important`, same media query). Hover detection remains the scene's own (3 hover/leave cycles with and without the change gave identical state results).
 - **Measured** (1280×834): pointer at bell centre, upper part, left and right edge → pointer; outside → default; video tab keeps its own pointer.
+
+---
+
+# Scene v5
+
+- `assets/scene-v5.splinecode` (188 472 bytes, not modified) is now the active scene: `src/config.ts` (`splineSceneUrl`), `scripts/sync-assets.mjs` (copies it to `public/spline/`), `CLAUDE.md` (asset table). v2, v3, v4 and the originals are kept untouched (also still in `public/spline/`, git-ignored).
+- Verified (headless Chrome, software WebGPU): desktop 1280×834 and phone 393×852 load only `scene-v5.splinecode`, scene state `ready`, hover → `data-state` default → active → default, no horizontal overflow, no console errors (only the missing `favicon.ico`, a Phase 04 item). Mobile camera pull-back and CSS unchanged. `astro check` 0 errors / 0 warnings / 0 hints; build OK.
+
+---
+
+# Refinements (round 8): volume control
+
+- **Inline expand:** the icon is always visible; the volume panel always reserves icon (44 px) + the slider's own place (`--vol-w`: 100 px, 72 px on phones), so the slider opens next to the icon in its own place and nothing moves. Only the slider's width and opacity animate: 200 ms, ease-out, the same on closing (the stock 1 s / 0.1 s slide-in transitions are overridden). Measured (1280×834): mute icon x 844, fullscreen x 988, duration x 809, progress bar x/width 327/482 identical closed, hovered and after leaving; slider width 0 → 100 (opacity 0 → 1) in about 200 ms and back; slider line 3 px, centre y = progress line centre y (566.1); tooltip unchanged (12/16 mono).
+- **Keyboard:** focusing the slider (Tab) opens it (`:focus-within`); Video.js's own keys stay.
+- **Touch (hover: none / pointer: coarse):** a tap on the volume icon opens the slider instead of muting (the stock mute `handleClick` is gated for touch only, on the same Video.js volume component; no parallel volume logic); a second tap on the icon or a tap outside the panel closes it; using the slider (drag/tap) keeps it open. Measured on a 393×852 touch emulation: tap icon → open (72 px), tap slider → volume 100 → 68 and still open, open after 3.5 s, tap icon → closed, tap icon → open, tap outside → closed; icon, fullscreen and duration positions unchanged throughout. On phones the player is narrow, so the reserved place makes the progress bar 72 px shorter than before (103 px at 393 px width).
+- **Note:** on touch the icon no longer mutes (second tap closes the slider); mute is reachable by dragging the slider to 0. The mouse keeps the stock click-to-mute.

@@ -40,7 +40,7 @@ export const videoModal = {
   captionHideMs: 10000,
 } as const;
 
-export const splineSceneUrl = '/spline/scene-v4.splinecode';
+export const splineSceneUrl = '/spline/scene-v5.splinecode';
 
 /**
  * The scene owns the lift/colour interaction; the page only mirrors its `kettlebellLifted` variable into the shared

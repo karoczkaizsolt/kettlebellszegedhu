@@ -1,11 +1,11 @@
 ---
-import iconDefault from '../assets/figma/icon-video-default.svg';
 import iconActive from '../assets/figma/icon-video-active.svg';
 ---
 
 <button type="button" class="video-tab" data-video-open aria-haspopup="dialog" aria-controls="video-modal">
   <span class="video-tab__icon">
-    <img class="icon-default" src={iconDefault.src} width="24" height="24" alt="" />
+    <!-- default icon colour: light gray (#E0E0E0), the same artwork as the active icon -->
+    <img class="icon-default" src={iconActive.src} width="24" height="24" alt="" />
     <img class="icon-active" src={iconActive.src} width="24" height="24" alt="" />
   </span>
   <span class="video-tab__label">Ismerd meg<br class="br-desktop" /> az edzéseket</span>
