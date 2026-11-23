@@ -31,6 +31,9 @@
   /* H0 headline scale, desktop only (>=960px). 1 = Figma size (48px); 1.19 = about +9px (+7pt). Mobile ignores it. */
   --h0-scale: 1.19;
 
+  /* StrongFirst logo scale (1 = Figma 101x20; 1.1 = +10 %) */
+  --logo-scale: 1.1;
+
   /* motion */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --ease-in: cubic-bezier(0.5, 0, 0.75, 0.3);
@@ -56,7 +59,6 @@
   --tab-bg-hover: rgba(224, 224, 224, 0.12);
   --tab-border: var(--light-gray-20);
   --tab-text: var(--caption-gray);
-  --tags-opacity: 0;
   --tags-visibility: hidden;
   --panel-shift: 0px;
 }
@@ -75,7 +77,6 @@
   --tab-bg-hover: #a8610f; /* the active orange, 10% darker */
   --tab-border: var(--black-20);
   --tab-text: var(--black);
-  --tags-opacity: 1;
   --tags-visibility: visible;
   --panel-shift: 40px; /* desktop only: panel moves 40px up in the active Figma frame */
 }

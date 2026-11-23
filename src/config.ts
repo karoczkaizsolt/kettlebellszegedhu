@@ -30,6 +30,16 @@ export const promoBar = {
   exitMs: 500,
 } as const;
 
+/**
+ * Video modal: until `autoplayDelayMs` after the modal has opened (not after the video has loaded) the video area
+ * stays plain black; then the video is revealed and playback starts. The caption below fades out `captionHideMs`
+ * after the modal has opened. Both timers restart on every opening and stop when the modal closes.
+ */
+export const videoModal = {
+  autoplayDelayMs: 800,
+  captionHideMs: 10000,
+} as const;
+
 export const splineSceneUrl = '/spline/scene-v4.splinecode';
 
 /**

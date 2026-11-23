@@ -8,13 +8,13 @@
 const rows = [
   {
     direction: 'left',
-    duration: '34s',
+    duration: '39s',
     copies: 3,
     tags: ['mobilitás és hajlékonyság', 'ízületkímélő terhelés', 'kardió és állóképesség', 'testzsírcsökkentés'],
   },
   {
     direction: 'right',
-    duration: '24s',
+    duration: '27s',
     copies: 4,
     tags: ['robbanékony erő', 'izomépítés', 'törzserő', 'fogáserő'],
   },
@@ -38,3 +38,36 @@ const rows = [
     ))
   }
 </div>
+
+<script>
+  import { sceneMobile } from '../config';
+
+  // Phones only: the label block is centred vertically in the free space between the hero (headline + logo) and the
+  // info card, so the gap above equals the gap below at any screen height. Tablet and desktop keep their CSS position.
+  const block = document.querySelector<HTMLElement>('[data-tags-marquee]');
+  const hero = document.querySelector<HTMLElement>('.hero');
+  const card = document.querySelector<HTMLElement>('.banner');
+  const phone = window.matchMedia(`(max-width: ${sceneMobile.maxWidth}px)`);
+
+  function place() {
+    if (!block || !hero || !card) return;
+    if (!phone.matches) {
+      block.style.top = ''; // back to the stylesheet position
+      return;
+    }
+    // offsetTop/offsetHeight ignore transforms, so the result is the same in the default and the active state
+    const heroBottom = hero.offsetTop + hero.offsetHeight;
+    const free = card.offsetTop - heroBottom - block.offsetHeight;
+    block.style.top = `${Math.round(heroBottom + Math.max(free, 0) / 2)}px`;
+  }
+
+  if (block && hero && card) {
+    place();
+    phone.addEventListener('change', place);
+    const ro = new ResizeObserver(place);
+    ro.observe(document.documentElement);
+    ro.observe(card);
+    ro.observe(hero);
+    document.fonts?.ready.then(place);
+  }
+</script>

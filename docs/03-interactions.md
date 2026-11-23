@@ -61,3 +61,46 @@
 - Safari was not tested (only Chrome/Chromium is available for automation here); the code uses nothing Chrome-specific except `@property` (Safari 16.4+) and `translate` (Safari 14.1+); the Video.js play-in-click path is meant for Safari's autoplay rules and needs a check on a real device.
 - Tap toggle on touch devices still has to be checked on a real phone.
 - On very short phones (height below about 700 px) the two label rows overlap the top of the lifted bell, because the hero occupies the space above.
+
+---
+
+# Refinements (round 3)
+
+- **Logo +10 %:** `--logo-scale: 1.1` (tokens.css); the logo is 111.1 × 22 px (was 101 × 20), same ratio, same centre (measured x-centre = viewport centre at 320, 375, 393, 768, 960, 1280, 1440).
+- **Labels, active state only:** desktop 20/28 px (was 14/22), fluid down to 16 px at 1024 px (`clamp(16px, 1.5625vw, 20px)`) so the right column keeps at least 19 px clear of the 127 px video tab (measured at 960, 1000, 1024, 1100, 1280, 1440, 1920); 960-1099 px: columns 16 px closer to the kettlebell (the labels are hidden in the default state, so the default look is unchanged). Rows keep the 66 px pitch (34 px rows, 32 px gap). Phones/tablets (marquee): 16/24 px (was 14/22), rows 30 px tall, block 70 px high (top `max(262px, 39vh - 76px)`), durations 39 s and 27 s (same speed as before); groups still cover the viewport and the loop stays seamless. The phone labels (16 px) are smaller than the active desktop labels (16-20 px).
+- **Autoplay:** playback starts 2 s after the modal has opened (`videoModal.autoplayDelayMs` in `src/config.ts`), the timer restarts on every opening and is cancelled by closing. Measured on three consecutive openings: not playing at 1.2 s, playing at 2.9 s, exactly one `play` event per opening.
+- **Close/reopen:** closing pauses at once; after the close the position is reset to 0 and the poster/big play button return (`hasStarted(false)`), so every opening starts from the beginning (measured `currentTime` 0 after each close).
+- **Phone modal:** the video fills the full viewport width (x 0, width 393 / 320), border radius 0 (tablet/desktop keep 8 px), no horizontal overflow (scrollWidth − innerWidth = 0).
+- **Time display:** current time (white) and total length (grey `#80818b`) on both sides of the progress bar ("1:16 ▬▬▬ 3:10"); the length comes from the video's own metadata (the metadata is requested when the modal opens; measured 190 s = 3:10), not a fixed value; same mono typography as the tooltips.
+
+---
+
+# Refinements (round 4)
+
+- **Label size jump (cause):** the large size (20/28 px) was set only under `[data-state='active']`, so on hover the labels were first rendered at the base 14 px and grew, and on leaving they shrank while fading out. Fix: on desktop the large size is now the base size of `.tag` (the labels are invisible by default, so the default look is unchanged). Measured frame by frame: font size constant (20 px desktop, 16 px mobile) during fade-in and fade-out; positions unchanged.
+- **Staggered fade-in:** opacity only (no scale, no movement). Each label has `--i` (order) and fades in 0.8 s with 90 ms offsets (desktop: left/right alternating top to bottom; mobile: row 1, then row 2). Fade-out: all together, 0.4 s. The containers only toggle `visibility`. `prefers-reduced-motion`: no stagger (measured: all labels at opacity 1 within the first frames).
+- **Modal idle phase:** the video area is plain black (`data-phase="idle"`, children `visibility: hidden`) until the 2 s delay has passed; loading (metadata) and playing are separate. The video is revealed when the `playing` event fires (fallback 1.5 s), with a 0.35 s fade. Measured: at 0.3 s and 1.0 s the video area is pure black (min = max = 0); revealed at about 2.0-2.4 s.
+- **Caption:** fades out 10 s after the opening (`videoModal.captionHideMs`), then its height and the gap collapse (no space left). The timer restarts on every opening and is stopped and reset on close. Measured over three consecutive openings: caption visible at 3 s, gone at about 9-11 s, restored after closing; an open/close at 1.5 s leaves no stray timer.
+
+---
+
+# Refinements (round 5)
+
+- **Labels:** "+" replaced by "és" in the desktop labels ("mobilitás és hajlékonyság", "kardió és állóképesség"); the mobile rows already used "és". Typography and animation unchanged.
+- **Video tab nudge:** cycle 21 s with three nudges at uneven spacing (about 5 s, 7 s and 9 s apart; first after 3 s) instead of one per 9 s. Same slide and colour; hover and active colours untouched.
+- **Modal:** dark wait 0.8 s (`videoModal.autoplayDelayMs`); the video area is pure black until then (measured max pixel 0 at 0.35 s), playback then starts and the video is revealed (phase `shown` at about 1.7-1.9 s measured, i.e. 0.8 s plus the player starting).
+- **Caption:** only its opacity changes after 10 s; the reserved space stays (height 22 px before and after). Measured over two openings: video rect (240, 138, 800 x 450) and close button y identical before and after the fade.
+
+---
+
+# Refinements (round 6)
+
+- **Phone label block centred vertically** (`TagsMarquee.astro` script, phones < 768 px only): top = hero bottom (headline + logo) + (card top − hero bottom − block height) / 2, recomputed on resize / font load / card size change; offsetTop based, so identical in default and active state. Row spacing, animation and typography unchanged; tablet/desktop keep the CSS position (768 px measured unchanged). Measured gap above / below: 86/86 px at 320×568, 375×667, 360×740, 390×844, 393×852 (stage min-height 872 px); 116/116 at 430×932; 147/146 at 700×900.
+
+---
+
+# Refinements (round 7)
+
+- **Desktop cursor:** while the scene reports the active state (pointer inside its hitbox) the canvas gets `cursor: pointer` (mouse devices only: `@media (hover: hover) and (pointer: fine)`); it returns to default when the state goes back. Touch devices unchanged.
+- **Cause of the missing cursor:** the Spline runtime places an empty transparent "HTML content" iframe (no content, no controls) over the canvas; the browser takes the cursor from the iframe. It is now click-through (`pointer-events: none !important`, same media query). Hover detection remains the scene's own (3 hover/leave cycles with and without the change gave identical state results).
+- **Measured** (1280×834): pointer at bell centre, upper part, left and right edge → pointer; outside → default; video tab keeps its own pointer.

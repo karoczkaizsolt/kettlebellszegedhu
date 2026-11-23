@@ -3,7 +3,7 @@ import { getImage } from 'astro:assets';
 import poster from '../assets/figma/video-poster.png';
 import iconClose from '../assets/figma/icon-close.svg';
 import iconCloseHover from '../assets/figma/icon-close-hover.svg';
-import { videoSrc } from '../config';
+import { videoSrc, videoModal } from '../config';
 
 const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, quality: 80 });
 ---
@@ -11,10 +11,17 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
 <!-- Figma 2148:396 (desktop) / 2154:576 (mobile). Behaviour: open/close, ESC, scroll lock, focus return and the
      Video.js player are in the script below. Video.js and its CSS are loaded only when the modal is first opened;
      the video itself is not requested before the visitor presses play (preload="none"). -->
-<dialog id="video-modal" class="modal" aria-label="Bemutatkozó videó" data-video-modal>
+<dialog
+  id="video-modal"
+  class="modal"
+  aria-label="Bemutatkozó videó"
+  data-video-modal
+  data-autoplay-delay={videoModal.autoplayDelayMs}
+  data-caption-hide={videoModal.captionHideMs}
+>
   <div class="modal__inner" data-modal-inner>
     <figure class="modal__figure">
-      <div class="modal__video" data-video-frame>
+      <div class="modal__video" data-video-frame data-phase="idle">
         <video
           class="video-js vjs-vt"
           controls
@@ -28,7 +35,7 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
         </video>
         <div class="modal__vignette" aria-hidden="true" data-vignette></div>
       </div>
-      <figcaption class="modal__caption">Bemutatkozó videó / Kettlebell Szeged 2019</figcaption>
+      <figcaption class="modal__caption" data-caption>Bemutatkozó videó / Kettlebell Szeged 2019</figcaption>
     </figure>
     <button type="button" class="close-btn" aria-label="Bezárás" data-video-close autofocus>
       <img class="icon-default" src={iconClose.src} width="20" height="20" alt="" />
@@ -46,6 +53,8 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
   const closer = document.querySelector<HTMLElement>('[data-video-close]');
   const videoEl = document.querySelector<HTMLVideoElement>('[data-video]');
   const vignette = document.querySelector<HTMLElement>('[data-vignette]');
+  const frame = document.querySelector<HTMLElement>('[data-video-frame]');
+  const caption = document.querySelector<HTMLElement>('[data-caption]');
 
   let player: VideoJsPlayer | undefined;
   let loading: Promise<VideoJsPlayer | undefined> | undefined;
@@ -72,7 +81,8 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
         userActions: { hotkeys: true },
         // Minimal control set: play/pause, progress, volume, fullscreen.
         controlBar: {
-          children: ['playToggle', 'progressControl', 'volumePanel', 'fullscreenToggle'],
+          // current time | progress | total length (read from the video's own metadata) | volume | fullscreen
+          children: ['playToggle', 'currentTimeDisplay', 'progressControl', 'durationDisplay', 'volumePanel', 'fullscreenToggle'],
           volumePanel: { inline: true },
         },
       });
@@ -83,6 +93,35 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
       return player;
     })();
     return loading;
+  }
+
+  // Phases of the video area: `idle` = plain black (nothing of the video, not even its poster or first frame, is
+  // visible, whatever the player is loading in the background); `shown` = revealed. Loading (metadata, player) and
+  // playing are tracked separately from this, so the video cannot flash up early.
+  function setPhase(phase: 'idle' | 'shown') {
+    if (frame) frame.dataset.phase = phase;
+  }
+  // Reveal when the first frame is really playing; if playback is blocked, reveal the poster with its play button.
+  function revealWhenPlaying(p: VideoJsPlayer) {
+    let revealed = false;
+    const reveal = () => {
+      if (revealed || !dialog?.open) return;
+      revealed = true;
+      setPhase('shown');
+    };
+    p.one('playing', reveal);
+    window.setTimeout(reveal, 1500);
+  }
+
+  // Caption: fades out (opacity only) `captionHideMs` after the opening; its space stays reserved.
+  let captionTimer: number | undefined;
+  function resetCaption() {
+    window.clearTimeout(captionTimer);
+    caption?.classList.remove('is-faded');
+  }
+  function scheduleCaptionHide(ms: number) {
+    resetCaption();
+    captionTimer = window.setTimeout(() => caption?.classList.add('is-faded'), ms);
   }
 
   // Autoplay: playback starts once per opening, from the opening click. If the browser refuses sound
@@ -114,16 +153,36 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
     }
   }
 
+  // The 2 s autoplay delay counts from the moment the modal opens (not from the video loading) and is restarted on
+  // every opening; closing cancels it.
+  let playTimer: number | undefined;
+  let metadataRequested = false;
+
   function open(from: HTMLElement) {
     if (!dialog || dialog.open) return;
     opener = from;
     started = false;
+    setPhase('idle');
     document.documentElement.classList.add('is-modal-open'); // background scroll lock
-    dialog.showModal(); // the rest of the page becomes inert (no background interaction)
-    // With the player already prepared (see the warm-up below) play() runs inside the click itself, which is what
-    // Safari requires; otherwise it starts as soon as the player is ready.
-    if (player) void startPlayback(player);
-    else void ensurePlayer().then((p) => p && startPlayback(p));
+    dialog.showModal();
+    scheduleCaptionHide(Number(dialog.dataset.captionHide)); // the rest of the page becomes inert (no background interaction)
+    const ready = ensurePlayer();
+    // Only the metadata is requested (to show the real length); the video itself loads when playback starts.
+    void ready.then((p) => {
+      if (p && !metadataRequested) {
+        metadataRequested = true;
+        p.preload('metadata');
+        p.load();
+      }
+    });
+    window.clearTimeout(playTimer);
+    playTimer = window.setTimeout(() => {
+      void ready.then((p) => {
+        if (!p || !dialog.open) return;
+        revealWhenPlaying(p);
+        void startPlayback(p);
+      });
+    }, Number(dialog.dataset.autoplayDelay));
   }
 
   // Closing plays the slide-out first (opposite direction), then closes the dialog. ESC and the backdrop go
@@ -132,6 +191,8 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
   function close() {
     if (!dialog?.open || closing) return;
     closing = true;
+    window.clearTimeout(playTimer);
+    window.clearTimeout(captionTimer);
     // Stop the video at once; the animation must not keep it playing.
     player?.pause();
     dialog.classList.add('is-closing');
@@ -161,7 +222,14 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
 
   // Runs after every close: pause, unlock the scroll, return the focus.
   dialog?.addEventListener('close', () => {
-    player?.pause();
+    window.clearTimeout(playTimer);
+    resetCaption();
+    setPhase('idle');
+    if (player) {
+      player.pause();
+      player.currentTime(0); // the next opening always starts from the beginning
+      player.hasStarted(false); // poster and big play button again
+    }
     started = false;
     document.documentElement.classList.remove('is-modal-open');
     opener?.focus();

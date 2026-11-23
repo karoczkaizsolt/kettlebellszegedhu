@@ -127,6 +127,20 @@ a {
 .scene[data-scene-state='ready'] canvas {
   opacity: 1;
 }
+/* Mouse devices: while the pointer is over the kettlebell's interactive area (the scene's hitbox, which is what
+   switches the page to the active state) the cursor is a pointer; it returns to the default when the pointer
+   leaves and the state goes back. Touch devices are not affected. */
+@media (hover: hover) and (pointer: fine) {
+  :root[data-state='active'] .scene canvas {
+    cursor: pointer;
+  }
+  /* The Spline runtime lays an empty, transparent "HTML content" iframe (no content, no controls) over the canvas.
+     The browser takes the cursor from the iframe, so a cursor set on the canvas never showed; letting the pointer
+     through to the canvas fixes that. Hover detection stays with the scene (verified: same hover results). */
+  .scene iframe {
+    pointer-events: none !important; /* the runtime sets pointer-events inline */
+  }
+}
 
 /* ------------------------------------------------------------------- hero */
 .hero {
@@ -205,8 +219,8 @@ a {
 
 .logo {
   flex: none;
-  width: 101px;
-  height: 20px;
+  width: calc(101px * var(--logo-scale));
+  height: calc(20px * var(--logo-scale));
   background-color: var(--eyebrow-color);
   -webkit-mask: url('/img/strongfirst-logo.svg') center / 100% 100% no-repeat;
   mask: url('/img/strongfirst-logo.svg') center / 100% 100% no-repeat;
@@ -224,13 +238,13 @@ a {
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  opacity: var(--tags-opacity);
+  /* the labels fade one by one (see .tag); the container only switches visibility, after the fade-out on hide */
   visibility: var(--tags-visibility);
-  transition: opacity var(--t-state) var(--ease-state), visibility 0s linear var(--t-state);
+  transition: visibility 0s linear 0.5s;
   pointer-events: none;
 }
 :root[data-state='active'] .tags {
-  transition: opacity var(--t-state) var(--ease-state), visibility 0s;
+  transition: visibility 0s;
 }
 .tag {
   display: flex;
@@ -245,6 +259,13 @@ a {
   letter-spacing: -0.02em;
   white-space: nowrap;
   color: var(--light-gray);
+  /* Fade only (no scale, no movement): out together and quickly, in one after another (--i = order, 90ms apart) */
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-state);
+}
+:root[data-state='active'] .tag {
+  opacity: 1;
+  transition: opacity 0.8s var(--ease-state) calc((var(--i, 0) + var(--row-offset, 0)) * 90ms);
 }
 
 /* ------------------------------------------- tags, phones/tablets: two moving rows (Figma mobile rows 1 and 2) */
@@ -255,22 +276,33 @@ a {
   right: 0;
   /* just above the kettlebell's handle: the two rows (65px) end where the lifted bell begins (about 39% of the
      height); on short screens they never go higher than the hero allows */
-  top: max(262px, calc(39vh - 71px));
+  top: max(262px, calc(39vh - 76px));
   display: none;
   flex-direction: column;
-  gap: 15px; /* Figma: rows 40px apart, 25px tall */
+  gap: 10px; /* rows 40px apart, as in Figma (30px tall rows at the larger label size) */
   overflow: hidden;
-  opacity: var(--tags-opacity);
   visibility: var(--tags-visibility);
-  transition: opacity var(--t-state) var(--ease-state), visibility 0s linear var(--t-state);
+  transition: visibility 0s linear 0.5s;
   pointer-events: none;
 }
 :root[data-state='active'] .tags-marquee {
-  transition: opacity var(--t-state) var(--ease-state), visibility 0s;
+  transition: visibility 0s;
 }
 .marquee__row {
   overflow: hidden;
-  height: 25px;
+  height: 30px;
+}
+/* the labels of a row appear one after another; the second row follows the first */
+.marquee__group .tag:nth-child(1) { --i: 0; }
+.marquee__group .tag:nth-child(2) { --i: 1; }
+.marquee__group .tag:nth-child(3) { --i: 2; }
+.marquee__group .tag:nth-child(4) { --i: 3; }
+.marquee__row[data-direction='right'] .tag { --row-offset: 4; }
+/* phones/tablets: labels a little larger than the Figma 14px, but smaller than the active desktop labels (20px) */
+.tags-marquee .tag {
+  height: 30px;
+  font-size: calc(16px + var(--fs-boost));
+  line-height: calc(24px + var(--fs-boost));
 }
 .marquee__track {
   display: flex;
@@ -506,7 +538,7 @@ a {
      property, so it never interferes with the positioning `transform`). Phone: up from the bottom edge; desktop:
      in from the right. */
   --tab-nudge: 0 -5px;
-  animation: video-tab-nudge var(--tab-nudge-cycle, 9s) var(--ease-state) var(--tab-nudge-delay, 5s) infinite;
+  animation: video-tab-nudge var(--tab-nudge-cycle, 21s) var(--ease-state) var(--tab-nudge-delay, 3s) infinite;
 }
 /* The strip that the slide-in uncovers (between the moved tab and the viewport edge) is part of the tab: it
    inherits the tab's own, possibly animated, background, so the colour covers the whole extended surface. */
@@ -525,14 +557,23 @@ a {
   transition: border-color var(--t-state) var(--ease-state);
 }
 @keyframes video-tab-nudge {
+  /* three nudges per 21 s cycle at uneven spacing (about 5 s, 7 s, 9 s apart), so the rhythm feels irregular */
   0%,
-  15%,
+  8%,
+  28%,
+  33%,
+  60%,
+  65%,
   100% {
     translate: 0 0;
     background-color: var(--tab-bg);
   }
-  4%,
-  10% {
+  2%,
+  6%,
+  29.5%,
+  31.5%,
+  61.5%,
+  63.5% {
     translate: var(--tab-nudge);
     background-color: var(--tab-bg-hover);
   }
@@ -742,10 +783,10 @@ a {
   gap: 32px;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 16px; /* phones: the video follows the viewport width with 16px side spacing */
+  padding: 0; /* phones: the video fills the whole viewport width */
 }
 .modal__video {
-  border-radius: 6px;
+  border-radius: 0; /* phones: no rounded corners */
   overflow: hidden;
 }
 /* Slide in from the bottom of the viewport and out again (opposite direction). Phones/tablets: the whole sheet
@@ -1014,15 +1055,36 @@ a {
     align-items: start;
     justify-content: space-between;
   }
+  /* Large labels (20/28 instead of 14/22). The size is the base size of the desktop labels, NOT a state change:
+     the labels are invisible in the default state, so the look is the same, and they can never shrink while
+     fading in or out. The columns grow outwards (column 1 is end-aligned, column 2 start-aligned), so the space
+     next to the kettlebell stays free; rows keep the Figma pitch. */
+  .tags {
+    grid-auto-rows: 34px;
+    row-gap: 32px;
+  }
+  .tags .tag {
+    height: 34px;
+    /* 20px from 1280px wide, scaling down to 16px at 1024px so that the right column clears the video tab */
+    font-size: calc(clamp(16px, 1.5625vw, 20px) + var(--fs-boost));
+    line-height: calc(clamp(22px, 2.1875vw, 28px) + var(--fs-boost));
+  }
+  /* narrow desktops: the columns sit 16px closer to the kettlebell (the video tab is 127px wide on the right) */
+  @media (max-width: 1099.98px) {
+    .tags {
+      width: 576px;
+      column-gap: 240px;
+    }
+  }
   /* DOM order = mobile order; desktop placement per Figma */
-  .tag:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: end; } /* mobilitás + hajlékonyság */
-  .tag:nth-child(5) { grid-column: 1; grid-row: 2; justify-self: end; } /* robbanékony erő */
-  .tag:nth-child(6) { grid-column: 1; grid-row: 3; justify-self: end; } /* izomépítés */
-  .tag:nth-child(7) { grid-column: 1; grid-row: 4; justify-self: end; } /* törzserő */
-  .tag:nth-child(4) { grid-column: 2; grid-row: 1; justify-self: start; } /* testzsírcsökkentés */
-  .tag:nth-child(3) { grid-column: 2; grid-row: 2; justify-self: start; } /* kardió + állóképesség */
-  .tag:nth-child(2) { grid-column: 2; grid-row: 3; justify-self: start; } /* ízületkímélő terhelés */
-  .tag:nth-child(8) { grid-column: 2; grid-row: 4; justify-self: start; } /* fogáserő */
+  .tag:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: end; --i: 0; } /* mobilitás + hajlékonyság */
+  .tag:nth-child(5) { grid-column: 1; grid-row: 2; justify-self: end; --i: 2; } /* robbanékony erő */
+  .tag:nth-child(6) { grid-column: 1; grid-row: 3; justify-self: end; --i: 4; } /* izomépítés */
+  .tag:nth-child(7) { grid-column: 1; grid-row: 4; justify-self: end; --i: 6; } /* törzserő */
+  .tag:nth-child(4) { grid-column: 2; grid-row: 1; justify-self: start; --i: 1; } /* testzsírcsökkentés */
+  .tag:nth-child(3) { grid-column: 2; grid-row: 2; justify-self: start; --i: 3; } /* kardió + állóképesség */
+  .tag:nth-child(2) { grid-column: 2; grid-row: 3; justify-self: start; --i: 5; } /* ízületkímélő terhelés */
+  .tag:nth-child(8) { grid-column: 2; grid-row: 4; justify-self: start; --i: 7; } /* fogáserő */
 
   .banner {
     bottom: 37px; /* Figma: panel top at y 679 (default) / 639 (active) in the 834px frame; the lift is a transform */
@@ -1308,4 +1370,62 @@ a {
 .modal .video-js.vjs-vt .vjs-time-tooltip:empty,
 .modal .video-js.vjs-vt .vjs-volume-tooltip:empty {
   display: none; /* no empty tooltip box before the first pointer move */
+}
+
+/* Time displays: current time (white) and total length (grey), both from the video's own metadata. The stock CSS
+   hides them on narrow players and gives them 1em side padding and a 4em minimum width. */
+.modal .video-js.vjs-vt .vjs-time-control {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 44px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.modal .video-js.vjs-vt .vjs-time-control .vjs-control-text {
+  display: none;
+}
+.modal .video-js.vjs-vt .vjs-current-time {
+  color: var(--white);
+}
+.modal .video-js.vjs-vt .vjs-duration {
+  color: var(--gray);
+}
+.modal .video-js.vjs-vt .vjs-time-control {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); /* legible over bright video frames */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tag,
+  :root[data-state='active'] .tag {
+    transition-delay: 0s !important;
+  }
+}
+
+/* ---- Video area phases: plain black until the autoplay delay has passed, then the video fades in ---- */
+.modal__video {
+  background: var(--black);
+}
+.modal__video > * {
+  transition: opacity 0.35s var(--ease-state);
+}
+.modal__video[data-phase='idle'] > * {
+  opacity: 0;
+  visibility: hidden; /* nothing of the player (poster, first frame, controls) shows or takes focus */
+  transition: none;
+}
+/* ---- Caption: only its opacity changes; its space stays reserved, so nothing moves ---- */
+.modal__caption {
+  transition: opacity 0.6s var(--ease-state);
+}
+.modal__caption.is-faded {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal__caption {
+    transition: opacity 0.01ms;
+  }
 }
