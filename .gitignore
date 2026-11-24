@@ -18,6 +18,7 @@ dist/video/
 # Dependencies and build output
 node_modules/
 dist/
+export/
 .astro/
 
 # Environment configuration (local values; keep only an .env.example in Git)
@@ -42,3 +43,4 @@ yarn-error.log*
 public/spline/
 public/fonts/
 public/img/
+public/wasm/

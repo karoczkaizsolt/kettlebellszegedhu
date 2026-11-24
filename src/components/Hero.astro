@@ -12,3 +12,25 @@
   </h1>
   <div class="logo" role="img" aria-label="StrongFirst"></div>
 </header>
+
+<script>
+  // Headline texture hand-over: the CSS veil (see global.css) covers the textured line until the image is decoded.
+  // The image URL is read from the computed style, so the breakpoint → image mapping lives only in the CSS.
+  const line = document.querySelector<HTMLElement>('.hero__line--textured');
+  const root = document.documentElement;
+  const url = line && /url\(["']?([^"')]+)["']?\)/.exec(getComputedStyle(line).backgroundImage)?.[1];
+  if (url) {
+    const started = performance.now();
+    const image = new Image();
+    image.src = url;
+    image
+      .decode()
+      .catch(() => {})
+      // Decoded almost at once (warm cache): show it without the cross-fade; otherwise fade the veil out.
+      .then(() => {
+        root.dataset.texture = performance.now() - started < 120 ? 'instant' : 'ready';
+      });
+  } else {
+    root.dataset.texture = 'instant';
+  }
+</script>

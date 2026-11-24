@@ -1,0 +1,19 @@
+# Apache / LiteSpeed: the Spline scene is a content-hashed build asset (_astro/scene-v6-both.<hash>.splinecode), so it
+# can be cached for a year; a new scene file gets a new URL automatically. Hosts without .htaccess support ignore this.
+<IfModule mod_mime.c>
+  AddType application/octet-stream .splinecode
+  AddType application/wasm .wasm
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.splinecode$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # The runtime WebAssembly files (/wasm/) keep stable names, so a shorter cache than the hashed assets.
+  <FilesMatch "\.wasm$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+</IfModule>
+# WebAssembly is not compressed by default on many hosts (the Draco decoder is 281 KB raw, about 87 KB compressed).
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE application/wasm
+</IfModule>

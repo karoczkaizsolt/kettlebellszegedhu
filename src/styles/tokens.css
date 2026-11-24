@@ -4,6 +4,15 @@
   initial-value: transparent;
 }
 
+/* Headline texture, first-load veil: until the texture image is decoded, a flat colour (the image's average) covers the
+   textured line instead of leaving it invisible. 1 = veil fully opaque, 0 = texture fully visible. It is a registered
+   property so the hand-over to the texture is a short cross-fade (see global.css and Hero.astro). */
+@property --texture-veil {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
 /* Design tokens, taken from the Figma variables (file FMm8M3VGmIyzVpmJUXe9Oi). */
 :root {
   /* colours */
@@ -51,6 +60,7 @@
   --eyebrow-color: var(--gray); /* also the StrongFirst logo colour */
   --headline-accent: var(--light-gray);
   --headline-overlay: transparent;
+  --texture-fallback-rgb: 109 110 119; /* average of headline-texture-mobile.png */
   --panel-bg: transparent;
   --panel-border: var(--light-gray-20);
   --panel-text: var(--light-gray);

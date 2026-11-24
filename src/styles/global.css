@@ -122,7 +122,7 @@ a {
   height: 100%;
   outline: none;
   opacity: 0;
-  transition: opacity 0.6s var(--ease);
+  transition: opacity 0.4s var(--ease);
 }
 .scene[data-scene-state='ready'] canvas {
   opacity: 1;
@@ -194,7 +194,23 @@ a {
   display: block;
 }
 
-/* The first line is filled with the image texture exported from Figma (`statement`). */
+/* The first line is filled with the image texture exported from Figma (`statement`). Until the image is decoded
+   (data-texture set by Hero.astro) a veil in the image's average colour covers it, so the line is never invisible;
+   when the image is ready the veil fades out. A warm load (image decoded almost at once) skips the fade. */
+.hero__line--textured {
+  --texture-veil-color: rgb(var(--texture-fallback-rgb) / var(--texture-veil));
+}
+:root[data-texture] {
+  --texture-veil: 0;
+}
+:root[data-texture='instant'] .hero__line--textured {
+  transition-property: --headline-overlay;
+}
+@media (scripting: none) {
+  :root {
+    --texture-veil: 0;
+  }
+}
 .hero__line--textured {
   margin-bottom: -18px;
   line-height: 34px;
@@ -202,13 +218,14 @@ a {
   /* the texture with the active-state overlay (30% #805318, Figma gradient layer) on top; the overlay colour is a
      registered property, so it fades in and out with the state instead of switching */
   background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
+    linear-gradient(90deg, var(--texture-veil-color), var(--texture-veil-color)),
     url('../assets/figma/headline-texture-mobile.png');
-  background-size: auto auto, cover;
-  background-position: top left, center;
-  background-repeat: repeat, no-repeat;
+  background-size: auto auto, auto auto, cover;
+  background-position: top left, top left, center;
+  background-repeat: repeat, repeat, no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
-  transition: --headline-overlay var(--t-state) var(--ease-state);
+  transition: --headline-overlay var(--t-state) var(--ease-state), --texture-veil 0.45s var(--ease-state);
 }
 
 .hero__line--accent {
@@ -773,8 +790,10 @@ a {
 }
 .modal::backdrop {
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
+  /* Prefixed first, standard last: the production CSS minifier drops the standard property when it comes first (only
+     the -webkit- one stays, which Chrome ignores), and the blur disappears from the build. */
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 .modal__inner {
   display: flex;
@@ -961,7 +980,9 @@ a {
   .hero__line--textured {
     margin-bottom: calc(var(--h0-tablet) * -0.4583);
     line-height: calc(var(--h0-tablet) * 1.2083);
+    --texture-fallback-rgb: 76 77 83; /* average of headline-texture-desktop.png */
     background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
+      linear-gradient(90deg, var(--texture-veil-color), var(--texture-veil-color)),
       url('../assets/figma/headline-texture-desktop.png');
   }
   .hero__line--accent {
@@ -1033,7 +1054,9 @@ a {
   .hero__line--textured {
     margin-bottom: calc(-22px * var(--h0-scale));
     line-height: calc(58px * var(--h0-scale));
+    --texture-fallback-rgb: 76 77 83; /* average of headline-texture-desktop.png */
     background-image: linear-gradient(90deg, var(--headline-overlay), var(--headline-overlay)),
+      linear-gradient(90deg, var(--texture-veil-color), var(--texture-veil-color)),
       url('../assets/figma/headline-texture-desktop.png');
   }
   .hero__line--accent {
@@ -1153,7 +1176,44 @@ a {
   }
 }
 
+/* ------------------------------------------------------------ page-load entrance (home)
+   The headline block glides down from above, the info card up from below. Only the individual `translate` and
+   `opacity` properties are animated (the card's `transform` belongs to centring and the lift, so they never fight),
+   and both end exactly at their final box: no layout shift, no jump. Same easing family as the state lift. */
+@keyframes enter-from-top {
+  from {
+    opacity: 0;
+    translate: 0 calc(var(--enter-distance) * -1);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes enter-from-bottom {
+  from {
+    opacity: 0;
+    translate: 0 var(--enter-distance);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+.hero__title {
+  --enter-distance: 28px;
+  animation: enter-from-top var(--t-lift) var(--ease-lift) backwards;
+}
+.banner {
+  --enter-distance: 40px;
+  animation: enter-from-bottom var(--t-lift) var(--ease-lift) 0.15s backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .hero__title,
+  .banner {
+    animation: none;
+  }
   .video-tab {
     animation: none;
   }

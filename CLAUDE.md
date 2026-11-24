@@ -59,7 +59,8 @@ Source files live in `assets/`. They are the originals: never edit, overwrite or
 
 | Asset | Status | Notes |
 |---|---|---|
-| `assets/scene-v5.splinecode` | Available, **in use** | Fifth export (design owner's modified scene). Used as is, not modified. The page loads it as `/spline/scene-v5.splinecode`; everything said about v4 below (runtime camera pull-back on phones, state mirroring, WebGPU gate) applies unchanged. |
+| `assets/scene-v6-both.splinecode` | Available, **in use** | Sixth export, renderer "Both" (WebGPU + WebGL 2; verified, see `docs/03-interactions.md`). Used as is, not modified. The build imports it as a content-hashed asset (`src/config.ts`, `?url` → `_astro/scene-v6-both.<hash>.splinecode`), so it can be cached for a long time (`public/.htaccess`) and a new scene file gets a new URL automatically; everything said about v4 below (runtime camera pull-back on phones, state mirroring, the WebGPU check and static fallback in the page) applies unchanged. |
+| `assets/scene-v5.splinecode` | Kept, not used | Fifth export, WebGPU-only. |
 | `assets/scene-v4.splinecode` | Kept, not used | Fourth export: smaller kettlebell (about 12% by the neck-highlight spacing), bottom edge in place, lift not higher than before. Previously used; still reports WebGPU-only (see section 8). |
 | `assets/scene-v3.splinecode`, `assets/scene-v2.splinecode`, `assets/scene.splinecode`, `assets/scene.webgpu-only.original.splinecode` | Kept, not used | Original scene and its backup copy. Never delete or overwrite. |
 | `assets/video.mp4` | Available, **never committed to Git** | Local intro video (1920×1080, H.264, ~190 s, ~68 MB). Source of the video. Never edit or delete the original; ship an optimized web version. See section 4 (Video and Git) and the hosting plan in `docs/01-audit-and-setup.md`. |
@@ -439,7 +440,7 @@ Astro project setup and Git connection (verify `.gitignore` before the first com
 **03 – Interactions**
 Synchronizing the page with the Spline scene state (`kettlebellLifted`), hover and tap behaviour, label/panel/video tab transitions, video modal behaviour (focus, ESC, scroll lock, playback), promo bar timing.
 
-**04 – Optimization & QA**
+**04 – Optimization & QA** (approved and closed; see `docs/04-optimization-and-qa.md`)
 Performance tuning (Core Web Vitals), SEO metadata and structured data verification, environment configuration check (demo noindex with crawlable robots.txt, production canonical, sitemap, robots), video availability check in demo and production, confirm no video file in Git history, accessibility audit, cross-browser and device testing, final Figma comparison.
 
 ### Testing and validation

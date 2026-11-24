@@ -2,7 +2,9 @@
 import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/global.css';
-import { canonicalBase, isProduction, PAGE_STATE_ATTRIBUTE, PAGE_STATES } from '../config';
+import textureDesktop from '../assets/figma/headline-texture-desktop.png';
+import textureMobile from '../assets/figma/headline-texture-mobile.png';
+import { splineSceneUrl, withBase, assetBase, canonicalBase, contact, isProduction, PAGE_STATE_ATTRIBUTE, PAGE_STATES } from '../config';
 
 interface Props {
   title: string;
@@ -10,6 +12,29 @@ interface Props {
 }
 const { title, description } = Astro.props;
 const canonical = canonicalBase ? new URL('/', canonicalBase).href : undefined;
+const ogImage = assetBase ? `${assetBase.replace(/\/+$/, '')}/img/og-image.png` : withBase('/img/og-image.png');
+const ogImageAlt = 'Az erő egy képesség. Szerezd meg! – kettlebell edzés Szegeden, StrongFirst';
+
+// Structured data: only what the page itself states (name from the site/domain, instructor, phone, e-mail, Szeged,
+// "2008 óta"). No address, opening hours or prices are published, because none have been provided.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SportsActivityLocation',
+  name: 'Kettlebell Szeged',
+  description,
+  ...(canonical && { url: canonical }),
+  image: ogImage,
+  telephone: contact.phoneDisplay,
+  email: contact.email,
+  foundingDate: '2008',
+  areaServed: { '@type': 'City', name: 'Szeged', containedInPlace: { '@type': 'Country', name: 'Magyarország' } },
+  knowsAbout: ['kettlebell edzés', 'személyi edzés', 'csoportos edzés', 'StrongFirst'],
+  founder: {
+    '@type': 'Person',
+    name: 'Varga Tamás',
+    jobTitle: 'SFG instruktor',
+  },
+};
 const stateAttr = { [PAGE_STATE_ATTRIBUTE]: PAGE_STATES.default };
 ---
 
@@ -23,11 +48,41 @@ const stateAttr = { [PAGE_STATE_ATTRIBUTE]: PAGE_STATES.default };
     {!isProduction && <meta name="robots" content="noindex, nofollow" />}
     {canonical && <link rel="canonical" href={canonical} />}
     <meta name="theme-color" content="#000000" />
-    <link rel="preload" href="/fonts/BasementGrotesque-Black.otf" as="font" type="font/otf" crossorigin />
-    <link rel="preload" href="/fonts/SometypeMono-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/SometypeMono-latin-ext.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href={withBase('/img/favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={withBase('/img/favicon.png')} type="image/png" sizes="200x200" />
+    <link rel="apple-touch-icon" sizes="180x180" href={withBase('/img/apple-touch-icon.png')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="hu_HU" />
+    <meta property="og:site_name" content="Kettlebell Szeged" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <link rel="preload" href={withBase('/fonts/BasementGrotesque-Black.otf')} as="font" type="font/otf" crossorigin />
+    <link rel="preload" href={withBase('/fonts/SometypeMono-latin.woff2')} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={withBase('/fonts/SometypeMono-latin-ext.woff2')} as="font" type="font/woff2" crossorigin />
+    <!-- Hero: the headline texture (which breakpoint uses which image is defined in global.css) and the logo mask.
+         Both are otherwise discovered only after the CSS is parsed, which left the headline's first line and the
+         logo missing for the first part of a cold load. The logo is a CSS mask (CORS-mode request), hence crossorigin. -->
+    <link rel="preload" href={textureDesktop.src} as="image" media="(min-width: 700px) and (max-width: 799.98px)" fetchpriority="high" />
+    <link rel="preload" href={textureDesktop.src} as="image" media="(min-width: 960px)" fetchpriority="high" />
+    <link rel="preload" href={textureMobile.src} as="image" media="(max-width: 699.98px), (min-width: 800px) and (max-width: 959.98px)" fetchpriority="high" />
+    <link rel="preload" href={withBase('/img/strongfirst-logo.svg')} as="image" type="image/svg+xml" crossorigin fetchpriority="high" />
   </head>
   <body>
+    <!-- Spline scene data: downloads in parallel with the runtime (SplineScene.astro loads the runtime after the first
+         paint). It sits at the start of the body, not in the head, so the stylesheet request (injected at the end of the
+         head) is issued first and the first paint is never queued behind it on HTTP/1.1 connections. -->
+    <link rel="preload" href={splineSceneUrl} as="fetch" crossorigin="anonymous" fetchpriority="low" />
     <slot />
   </body>
 </html>

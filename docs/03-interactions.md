@@ -120,3 +120,13 @@
 - **Keyboard:** focusing the slider (Tab) opens it (`:focus-within`); Video.js's own keys stay.
 - **Touch (hover: none / pointer: coarse):** a tap on the volume icon opens the slider instead of muting (the stock mute `handleClick` is gated for touch only, on the same Video.js volume component; no parallel volume logic); a second tap on the icon or a tap outside the panel closes it; using the slider (drag/tap) keeps it open. Measured on a 393×852 touch emulation: tap icon → open (72 px), tap slider → volume 100 → 68 and still open, open after 3.5 s, tap icon → closed, tap icon → open, tap outside → closed; icon, fullscreen and duration positions unchanged throughout. On phones the player is narrow, so the reserved place makes the progress bar 72 px shorter than before (103 px at 393 px width).
 - **Note:** on touch the icon no longer mutes (second tap closes the slider); mute is reachable by dragging the slider to 0. The mouse keeps the stock click-to-mute.
+
+---
+
+# Scene v6-both
+
+- `assets/scene-v6-both.splinecode` (188 470 bytes, not modified) is the active scene: `src/config.ts`, `scripts/sync-assets.mjs`, `CLAUDE.md`. v2-v5 and the originals are kept (also in `public/spline/`).
+- **Renderer check** (Spline runtime 2.0.211 in headless Chrome, standalone load without the page, same method as for v5): v6 in a browser without a WebGPU adapter loads without the "exported for WebGPU only" error (v5 still logs it) and `kettlebellLifted` is readable, so it is a "Both" export. With WebGPU: loads, no error, the bell renders.
+- **WebGL 2 path caveats:** the runtime warns "this document uses PBR material maps ... which the classic WebGL pipeline does not render"; in the headless software WebGL 2 test the canvas showed only the flat backdrop and no kettlebell (checked after 10 s and 30 s). Not confirmed on real hardware.
+- **Page:** the existing WebGPU check and static fallback were not touched. With WebGPU the page loads v6 only, hover mirrors `data-state` default → active → default; without WebGPU the page stays in `data-scene-state="unsupported"` (static fallback) and does not request the scene, so the scene's WebGL 2 path is not used on the page.
+- Runtime warning in all cases: "Your .splinecode file is more recent than the library. Please upgrade @splinetool/runtime" (also with v5; the project has 2.0.211).
