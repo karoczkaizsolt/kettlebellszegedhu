@@ -1,6 +1,8 @@
 ---
-// Figma 2154:625. A fixed overlay at the top of the viewport, shown once on every page load
-// (timing and animation values: `promoBar` in src/config.ts).
+// Figma 2154:625. A fixed overlay at the top of the viewport. Two independent triggers (`promoBar.autoDelayMs` after the
+// page has loaded; `promoBar.afterModalMs` after the video modal was first opened) share one show routine
+// (timing and animation values: `promoBar` in src/config.ts). It is a manual popover, so
+// it lives in the top layer: that is the only way to sit above the modal (a native <dialog>) and its backdrop.
 import { promoBar } from '../config';
 import iconFire from '../assets/figma/icon-local-fire-department.svg';
 ---
@@ -9,7 +11,9 @@ import iconFire from '../assets/figma/icon-local-fire-department.svg';
   class="promo"
   role="status"
   data-promo
-  data-delay={promoBar.firstDelayMs}
+  popover="manual"
+  data-auto-delay={promoBar.autoDelayMs}
+  data-modal-delay={promoBar.afterModalMs}
   data-visible-ms={promoBar.visibleMs}
   style={`--promo-enter: ${promoBar.enterMs}ms; --promo-exit: ${promoBar.exitMs}ms`}
 >
@@ -21,17 +25,70 @@ import iconFire from '../assets/figma/icon-local-fire-department.svg';
   const bar = document.querySelector<HTMLElement>('[data-promo]');
 
   if (bar) {
-    const delay = Number(bar.dataset.delay);
+    const autoDelay = Number(bar.dataset.autoDelay);
+    const modalDelay = Number(bar.dataset.modalDelay);
     const visibleMs = Number(bar.dataset.visibleMs);
-    // The timer starts when the page has finished loading; one show per page load, no repetition.
-    const start = () =>
+    const exitMs = Number.parseFloat(getComputedStyle(bar).getPropertyValue('--promo-exit')) || 500;
+    const canPopover = typeof bar.showPopover === 'function';
+    // True from the moment a show starts until the bar has completely gone (exit animation included).
+    let busy = false;
+
+    // The one show routine both triggers use. A trigger that arrives while the bar is showing, or still animating
+    // out, is ignored: no second bar and no second animation. After the bar has gone a later trigger shows it again.
+    const requestShow = () => {
+      if (busy) return;
+      busy = true;
+      if (canPopover) bar.showPopover();
+      // One frame later so the slide/fade starts from the hidden state.
+      requestAnimationFrame(() => requestAnimationFrame(() => (bar.dataset.visible = 'true')));
       window.setTimeout(() => {
-        bar.dataset.visible = 'true';
+        bar.dataset.visible = 'false';
         window.setTimeout(() => {
-          bar.dataset.visible = 'false';
-        }, visibleMs);
-      }, delay);
-    if (document.readyState === 'complete') start();
-    else window.addEventListener('load', start, { once: true });
+          if (canPopover) bar.hidePopover();
+          busy = false;
+        }, exitMs + 50);
+      }, visibleMs);
+    };
+
+    // Trigger 1: after the page has loaded.
+    const startAuto = () => window.setTimeout(requestShow, autoDelay);
+    if (document.readyState === 'complete') startAuto();
+    else window.addEventListener('load', startAuto, { once: true });
+
+    // Trigger 2: the first opening of the video modal only; the timer is never restarted and never cancelled
+    // (closing the modal does not stop it).
+    document.addEventListener(
+      'vt:modal-open',
+      () => window.setTimeout(requestShow, modalDelay),
+      { once: true },
+    );
+
+    // Fullscreen playback: while an element is fullscreen the browser renders only that element's subtree (plus
+    // the top-layer elements inside it), so a popover that lives in <body> would stay hidden behind the fullscreen
+    // video. The bar therefore moves into the fullscreen element for as long as it is fullscreen and back to its
+    // place afterwards. If it is showing at that moment it is re-opened in its new place (it is already fully
+    // visible, so there is no new animation).
+    const home = bar.parentElement;
+    const moveTo = (target: Element | null) => {
+      if (!home || !target || bar.parentElement === target) return;
+      const wasOpen = canPopover && bar.matches(':popover-open');
+      target.append(bar);
+      if (wasOpen) bar.showPopover();
+    };
+    const onFullscreenChange = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element | null };
+      const element = document.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+      moveTo(element && element !== document.documentElement ? element : home);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+    // A modal opened while the bar is visible would cover it (later in the top layer): bring the bar back on top.
+    document.addEventListener('vt:modal-open', () => {
+      if (canPopover && bar.matches(':popover-open') && bar.dataset.visible === 'true') {
+        bar.hidePopover();
+        bar.showPopover();
+      }
+    });
   }
 </script>

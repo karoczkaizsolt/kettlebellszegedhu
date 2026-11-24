@@ -121,11 +121,20 @@ a {
   width: 100%;
   height: 100%;
   outline: none;
+  /* Hidden until the scene has really been drawn; `data-scene-state='ready'` is set once, after the runtime, the
+     renderer and the first rendered frames are in place, and starts this one fade (700 ms, even in and out). The
+     state never goes back to `loading`, so no interaction can replay it. The canvas keeps its full-bleed box the
+     whole time (no layout shift); on failure it stays transparent and the static fallback stays visible. */
   opacity: 0;
-  transition: opacity 0.4s var(--ease);
+  transition: opacity var(--t-scene-fade) var(--ease-state);
 }
 .scene[data-scene-state='ready'] canvas {
   opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene canvas {
+    transition: none;
+  }
 }
 /* Mouse devices: while the pointer is over the kettlebell's interactive area (the scene's hitbox, which is what
    switches the page to the active state) the cursor is a pointer; it returns to the default when the pointer
@@ -646,6 +655,14 @@ a {
   top: 0;
   left: 0;
   right: 0;
+  bottom: auto;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  overflow: visible; /* resets of the [popover] user-agent styles (the bar is a top-layer popover) */
   display: flex;
   align-items: center;
   justify-content: center;

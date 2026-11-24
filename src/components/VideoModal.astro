@@ -202,6 +202,7 @@ const posterImage = await getImage({ src: poster, format: 'webp', width: 1024, q
     setPhase('idle');
     document.documentElement.classList.add('is-modal-open'); // background scroll lock
     dialog.showModal();
+    document.dispatchEvent(new CustomEvent('vt:modal-open')); // the promo bar starts its one-time timer on the first one
     scheduleCaptionHide(Number(dialog.dataset.captionHide)); // the rest of the page becomes inert (no background interaction)
     const ready = ensurePlayer();
     // Only the metadata is requested (to show the real length); the video itself loads when playback starts.

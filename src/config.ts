@@ -33,10 +33,18 @@ export const videoSrc: string = import.meta.env.PUBLIC_VIDEO_SRC || withBase('/v
 export const PAGE_STATE_ATTRIBUTE = 'data-state';
 export const PAGE_STATES = { default: 'default', active: 'active' } as const;
 
-/** Promo bar: timing and animation values in one place. It is shown on every page load (reloads included), once per load. */
+/**
+ * Promo bar: timing and animation values in one place. Two independent triggers show it through the same logic
+ * (a trigger that fires while the bar is showing is ignored; one that fires after it has gone shows it again):
+ * - `autoDelayMs` after the page has loaded (once per load);
+ * - `afterModalMs` after the video modal was opened for the first time (the timer is not restarted by later
+ *   openings, and closing the modal does not cancel it). If the modal is open then, the bar appears above it.
+ */
 export const promoBar = {
-  /** Delay after the page has loaded before the bar slides in. */
-  firstDelayMs: 3000,
+  /** Delay after the page has loaded before the automatic show. */
+  autoDelayMs: 4000,
+  /** Delay between the first opening of the video modal and the modal-triggered show. */
+  afterModalMs: 60000,
   /** How long the bar stays visible. */
   visibleMs: 6000,
   /** Slide-down + fade-in and fade-out + slide-up durations. */

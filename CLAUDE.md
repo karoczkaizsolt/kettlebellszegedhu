@@ -294,10 +294,12 @@ Text:
 
 ### Behaviour
 
-Design owner's update (supersedes the earlier 5 s / 6 s / 45 s repeat and the once-per-session rule):
-- Appears 3 seconds after the page has loaded, stays visible for 6 seconds, then disappears.
-- Shown on **every page load, reloads included**, once per load; no repetition on the same load, no ticker behaviour. No `sessionStorage` or any other display restriction.
-- Delay, visible time and enter/exit durations are configured in one place: `promoBar` in `src/config.ts`.
+Design owner's update (two independent triggers, one show routine):
+- **Automatic:** 4 seconds after the page has loaded (`promoBar.autoDelayMs`), once per page load.
+- **Modal-linked:** 60 seconds (`promoBar.afterModalMs`) after the video modal is opened for the **first** time. Later openings do not restart the timer and closing the modal does not cancel it.
+- Both triggers call the same routine: a trigger that fires while the bar is showing (or still animating out) is ignored, so there is never a second bar or a second animation; a trigger that fires after the bar has gone shows it again. The bar stays visible for 6 seconds (slide-down + fade-in, then fade-out + slide-up). No `sessionStorage`.
+- If the modal is open at that moment the bar appears **above the modal and its backdrop**: the bar is a `popover="manual"` element (top layer; a native `<dialog>` is in the top layer too, so z-index alone cannot do this). It keeps `pointer-events: none`, so it never blocks closing the modal or the video controls.
+- Timing and enter/exit durations are configured in one place: `promoBar` in `src/config.ts`. The modal announces its opening with the `vt:modal-open` document event.
 
 ### Visual requirements
 
