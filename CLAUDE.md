@@ -59,7 +59,8 @@ Source files live in `assets/`. They are the originals: never edit, overwrite or
 
 | Asset | Status | Notes |
 |---|---|---|
-| `assets/scene-v6-both.splinecode` | Available, **in use** | Sixth export, renderer "Both" (WebGPU + WebGL 2; verified, see `docs/03-interactions.md`). Used as is, not modified. The build imports it as a content-hashed asset (`src/config.ts`, `?url` → `_astro/scene-v6-both.<hash>.splinecode`), so it can be cached for a long time (`public/.htaccess`) and a new scene file gets a new URL automatically; everything said about v4 below (runtime camera pull-back on phones, state mirroring, the WebGPU check and static fallback in the page) applies unchanged. |
+| `assets/scene-v7-both.splinecode` | Available, **in use** | Seventh export, renderer "Both": same scene as v6 plus fog "Use Background Color" with the background set to the former fog colour `#0a0705` (look unchanged). The scene background is set at runtime per breakpoint (`sceneBackground` in `src/config.ts`), which tints only the distant, upper backdrop through the fog. See `docs/03-interactions.md` (Scene v7-both). Used as is, not modified. |
+| `assets/scene-v6-both.splinecode` | Kept, not used | Sixth export, renderer "Both" (WebGPU + WebGL 2; verified, see `docs/03-interactions.md`). Used as is, not modified. The build imports it as a content-hashed asset (`src/config.ts`, `?url` → `_astro/scene-v6-both.<hash>.splinecode`), so it can be cached for a long time (`public/.htaccess`) and a new scene file gets a new URL automatically; everything said about v4 below (runtime camera pull-back on phones, state mirroring, the WebGPU check and static fallback in the page) applies unchanged. |
 | `assets/scene-v5.splinecode` | Kept, not used | Fifth export, WebGPU-only. |
 | `assets/scene-v4.splinecode` | Kept, not used | Fourth export: smaller kettlebell (about 12% by the neck-highlight spacing), bottom edge in place, lift not higher than before. Previously used; still reports WebGPU-only (see section 8). |
 | `assets/scene-v3.splinecode`, `assets/scene-v2.splinecode`, `assets/scene.splinecode`, `assets/scene.webgpu-only.original.splinecode` | Kept, not used | Original scene and its backup copy. Never delete or overwrite. |
@@ -214,6 +215,8 @@ When the pointer leaves the interaction area, everything returns to the default 
 The page background is implemented in CSS and follows the dark and orange states from Figma.
 
 **Decision (design owner):** do **not** modify the Spline scene's background or the `Studio_Cyc` object. The fog and the lights are part of the scene's visual design.
+
+**Update (design owner, scene v7):** the scene's background colour is now controlled from the page: the fog uses the background colour ("Use Background Color"), and the page sets it with the runtime's public `setBackgroundColor()` (`sceneBackground` in `src/config.ts`: desktop `#0a0705` = the original look, phones `#2a1c12` = a lighter upper backdrop). The canvas stays opaque; `Studio_Cyc`, the lights and the fog distances are unchanged.
 
 **Result of the milestone 02 investigation:** the canvas is opaque (the scene paints its own studio backdrop: near-black by default, warm gold when lifted), so the CSS page background shows only where the canvas does not cover the page: the top strip (the canvas is shifted down to match the Figma framing, and its top edge fades into the CSS background with a CSS mask), the very bottom on mobile, and everywhere when the scene is unavailable (fallback). The CSS background therefore uses the same two looks (dark; dark-brown to orange) so the transition is seamless. No change to the scene was necessary.
 

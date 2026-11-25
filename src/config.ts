@@ -63,11 +63,11 @@ export const videoModal = {
 } as const;
 
 /**
- * The scene file is imported as a build asset (`?url`): the build emits it as `_astro/scene-v6-both.<hash>.splinecode`
+ * The scene file is imported as a build asset (`?url`): the build emits it as `_astro/scene-v7-both_export2.<hash>.splinecode`
  * with a content hash and the base path. The hash is generated, never typed: a new scene file gets a new URL
  * automatically, so the file can be cached for a long time without ever serving a stale scene.
  */
-import sceneAssetUrl from '../assets/scene-v6-both.splinecode?url';
+import sceneAssetUrl from '../assets/scene-v7-both_export2.splinecode?url';
 export const splineSceneUrl: string = sceneAssetUrl;
 
 /**
@@ -97,6 +97,21 @@ export const sceneMobile = {
   maxWidth: 767.98,
   dollyBack: 365,
   cameraName: 'Play_Camera',
+} as const;
+
+/**
+ * Scene background colour, set at runtime with the Spline runtime's public `setBackgroundColor()`. The canvas stays
+ * opaque: this is the scene's own background, not a CSS colour behind a transparent canvas.
+ * Since scene v7 the scene's fog uses this colour ("Use Background Color"), so the value tints only what lies beyond
+ * the fog start: the distant floor and back wall, i.e. the upper, dark part of the stage. The near floor (the warm lower
+ * gradient), the lights and the kettlebell are closer and keep their look.
+ * `desktop` is the colour the scene was exported with (identical to the original fog colour): keep it at #0a0705 for the
+ * original desktop look. `mobile` applies below `sceneMobile.maxWidth` (same breakpoint as the other phone settings)
+ * and is re-applied when the viewport crosses the breakpoint.
+ */
+export const sceneBackground = {
+  desktop: '#0a0705',
+  mobile: '#2a1c12',
 } as const;
 
 /** Contact details shown in the info banner (only what is in the approved design). */

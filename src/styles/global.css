@@ -398,9 +398,13 @@ a {
 .banner {
   position: absolute;
   z-index: 2;
-  left: 50%;
+  /* Centred without `transform` on phones/tablets: the entrance only ever animates the vertical `translate`, so no
+     horizontal offset can exist at any point (desktop restores left: 50% + translateX(-50%) below). */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   bottom: 64px; /* 48px video tab + 16px gap (Figma mobile) */
-  transform: translateX(-50%);
+  transform: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -535,7 +539,9 @@ a {
 
 /* ------------------------------------------------------------- video tab */
 .video-tab {
-  position: fixed;
+  /* Phones/tablets: not fixed or sticky; it sits at the bottom of the page and scrolls with it. No automatic motion
+     (desktop restores the fixed position and the nudge in the min-width: 960px block). */
+  position: absolute;
   z-index: 20;
   left: 50%;
   bottom: 0;
@@ -563,8 +569,17 @@ a {
   /* From time to time the tab slides in from the viewport edge, takes the hover colour and returns (the `translate`
      property, so it never interferes with the positioning `transform`). Phone: up from the bottom edge; desktop:
      in from the right. */
-  --tab-nudge: 0 -5px;
-  animation: video-tab-nudge var(--tab-nudge-cycle, 21s) var(--ease-state) var(--tab-nudge-delay, 3s) infinite;
+  --tab-nudge: 0 0;
+  /* Phones/tablets: enters together with the profile card (same keyframes, duration, easing and delay as `.banner`
+     further down), so the two cards move as one unit. No other motion. Desktop replaces it with the nudge. */
+  --enter-distance: 40px;
+  animation: enter-from-bottom var(--t-lift) var(--ease-lift) 0.15s backwards;
+}
+/* the phone/tablet tab is anchored to the page, not the viewport */
+@media (max-width: 959.98px) {
+  body {
+    position: relative;
+  }
 }
 /* The strip that the slide-in uncovers (between the moved tab and the viewport edge) is part of the tab: it
    inherits the tab's own, possibly animated, background, so the colour covers the whole extended surface. */
@@ -575,6 +590,7 @@ a {
   right: 0;
   top: 100%;
   height: 24px;
+  display: none; /* only the desktop slide-in uncovers this strip */
   box-sizing: border-box;
   border-left: 1px solid var(--tab-border);
   border-right: 1px solid var(--tab-border);
@@ -719,6 +735,11 @@ a {
 /* Fixed to the bottom-left corner of the window (10px / 10px, design-owner decision), desktop and mobile.
    The icon stays put; the text slides out of the icon to the right and back in. The clip window starts at the
    icon edge, so the text is only ever visible to the right of the icon. */
+@media (max-width: 959.98px) {
+  .stage .credit {
+    display: none; /* the INFO button is desktop only */
+  }
+}
 .credit {
   position: fixed;
   z-index: 30;
@@ -1127,6 +1148,9 @@ a {
   .tag:nth-child(8) { grid-column: 2; grid-row: 4; justify-self: start; --i: 7; } /* fogáserő */
 
   .banner {
+    left: 50%;
+    right: auto;
+    margin-inline: 0;
     bottom: 37px; /* Figma: panel top at y 679 (default) / 639 (active) in the 834px frame; the lift is a transform */
     transform: translateX(-50%) translateY(calc(var(--panel-shift) * -1));
     flex-direction: row;
@@ -1162,6 +1186,8 @@ a {
   }
 
   .video-tab {
+    position: fixed;
+    animation: video-tab-nudge var(--tab-nudge-cycle, 21s) var(--ease-state) var(--tab-nudge-delay, 3s) infinite;
     left: auto;
     right: 0;
     bottom: auto;
@@ -1177,6 +1203,7 @@ a {
     --tab-nudge: -10px 0;
   }
   .video-tab::after {
+    display: block;
     left: 100%;
     right: auto;
     top: -1px;

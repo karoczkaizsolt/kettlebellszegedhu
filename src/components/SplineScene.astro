@@ -1,5 +1,5 @@
 ---
-import { splineSceneUrl, wasmPath, sceneMobile, sceneState, PAGE_STATE_ATTRIBUTE, PAGE_STATES } from '../config';
+import { splineSceneUrl, wasmPath, sceneMobile, sceneBackground, sceneState, PAGE_STATE_ATTRIBUTE, PAGE_STATES } from '../config';
 ---
 
 <!-- The Spline scene owns the kettlebell animation, colour change and hover/tap logic.
@@ -13,6 +13,8 @@ import { splineSceneUrl, wasmPath, sceneMobile, sceneState, PAGE_STATE_ATTRIBUTE
   data-mobile-max={sceneMobile.maxWidth}
   data-mobile-dolly={sceneMobile.dollyBack}
   data-camera-name={sceneMobile.cameraName}
+  data-bg-desktop={sceneBackground.desktop}
+  data-bg-mobile={sceneBackground.mobile}
   data-state-variable={sceneState.variableName}
   data-state-poll={sceneState.pollMs}
   data-state-attribute={PAGE_STATE_ATTRIBUTE}
@@ -98,6 +100,20 @@ import { splineSceneUrl, wasmPath, sceneMobile, sceneState, PAGE_STATE_ATTRIBUTE
 
   const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
+  // Scene background (the scene's own, opaque background; since scene v7 its fog follows this colour, so only the
+  // distant, upper part of the stage changes). Desktop keeps the exported colour; phones get `sceneBackground.mobile`.
+  // Re-applied when the viewport crosses the phone breakpoint. Public runtime API, nothing in the scene file changes.
+  function applySceneBackground(app: { setBackgroundColor(color: string): void }) {
+    if (!host) return;
+    const desktop = host.dataset.bgDesktop;
+    const mobile = host.dataset.bgMobile;
+    if (!desktop || !mobile) return;
+    const query = window.matchMedia(`(max-width: ${host.dataset.mobileMax}px)`);
+    const apply = () => app.setBackgroundColor(query.matches ? mobile : desktop);
+    apply();
+    query.addEventListener('change', apply);
+  }
+
   // Resolves once the browser has painted the hero (first-contentful-paint), with a safety timeout.
   const firstPaint = () =>
     new Promise<void>((resolve) => {
@@ -154,6 +170,7 @@ import { splineSceneUrl, wasmPath, sceneMobile, sceneState, PAGE_STATE_ATTRIBUTE
       await app.load(sceneUrl);
       mark('spline:scene-loaded');
       applyMobileComposition(app);
+      applySceneBackground(app);
       mirrorSceneState(app);
       // Fade the canvas in only once the scene has really been drawn (not merely parsed).
       await nextFrame().then(nextFrame);
