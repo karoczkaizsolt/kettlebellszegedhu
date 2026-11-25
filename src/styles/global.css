@@ -620,23 +620,29 @@ a {
     background-color: var(--tab-bg-hover);
   }
 }
-/* Hover / focus / press = the same look as the automatic slide-in. When the animation is removed the values
-   transition from where the animation was, so the two never fight. */
+/* Hover / focus / press = the same look as the automatic slide-in (desktop). On phones/tablets the tab only gets the
+   hover colour: `--tab-nudge` is 0 there, so nothing moves, and the one-time page-load entrance animation is never
+   switched off and back on (that restarted it after a tap or after closing the modal). */
 .video-tab:focus-visible,
 .video-tab:active {
-  animation: none;
   translate: var(--tab-nudge);
   background-color: var(--tab-bg-hover);
 }
 @media (hover: hover) {
   .video-tab:hover {
-    animation: none;
     translate: var(--tab-nudge);
     background-color: var(--tab-bg-hover);
   }
 }
-:root.is-modal-open .video-tab {
-  animation: none;
+/* Desktop (fine pointer): while the tab is hovered/focused/pressed or the modal is open, the timed nudge pauses.
+   When the animation is removed the values transition from where the animation was, so the two never fight. */
+@media (min-width: 960px) and (hover: hover) and (pointer: fine) {
+  .video-tab:focus-visible,
+  .video-tab:active,
+  .video-tab:hover,
+  :root.is-modal-open .video-tab {
+    animation: none;
+  }
 }
 .video-tab__icon {
   position: relative;
@@ -814,9 +820,13 @@ a {
   margin: 0;
   padding: 0;
   border: 0;
-  background: var(--mobile-bg);
   color: var(--caption-gray);
   overflow: hidden;
+}
+.modal {
+  /* Transparent on every screen size: the page behind is darkened and blurred by `.modal::backdrop` below (same as
+     desktop), so phones/tablets no longer get an opaque sheet. */
+  background: transparent;
 }
 .modal:not([open]) {
   display: none;
@@ -1217,6 +1227,15 @@ a {
 
   .modal {
     background: transparent;
+  }
+}
+
+/* Touch devices with the wide (desktop) layout, for example a tablet in landscape: no timed slide-in and no nudge,
+   so nothing moves unless the page itself changes. A tap still opens the modal; only the colour reacts. */
+@media (min-width: 960px) and (any-hover: none), (min-width: 960px) and (pointer: coarse) {
+  .video-tab {
+    animation: none;
+    --tab-nudge: 0 0;
   }
 }
 

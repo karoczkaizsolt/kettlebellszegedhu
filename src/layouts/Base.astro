@@ -8,9 +8,11 @@ import { splineSceneUrl, withBase, assetBase, canonicalBase, contact, isProducti
 
 interface Props {
   title: string;
+  /** Text of the <title> element (browser tab); defaults to `title`, which also feeds og:title and twitter:title. */
+  documentTitle?: string;
   description: string;
 }
-const { title, description } = Astro.props;
+const { title, documentTitle = title, description } = Astro.props;
 const canonical = canonicalBase ? new URL('/', canonicalBase).href : undefined;
 const ogImage = assetBase ? `${assetBase.replace(/\/+$/, '')}/img/og-image.png` : withBase('/img/og-image.png');
 const ogImageAlt = 'Az erő egy képesség. Szerezd meg! – kettlebell edzés Szegeden, StrongFirst';
@@ -43,7 +45,7 @@ const stateAttr = { [PAGE_STATE_ATTRIBUTE]: PAGE_STATES.default };
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{documentTitle}</title>
     <meta name="description" content={description} />
     {!isProduction && <meta name="robots" content="noindex, nofollow" />}
     {canonical && <link rel="canonical" href={canonical} />}

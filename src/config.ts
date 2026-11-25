@@ -111,7 +111,7 @@ export const sceneMobile = {
  */
 export const sceneBackground = {
   desktop: '#0a0705',
-  mobile: '#2a1c12',
+  mobile: '#111111',
 } as const;
 
 /** Contact details shown in the info banner (only what is in the approved design). */
