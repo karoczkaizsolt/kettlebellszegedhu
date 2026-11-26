@@ -213,7 +213,7 @@ a {
   --texture-veil: 0;
 }
 :root[data-texture='instant'] .hero__line--textured {
-  transition-property: --headline-overlay;
+  transition-property: none;
 }
 @media (scripting: none) {
   :root {
@@ -234,7 +234,11 @@ a {
   background-repeat: repeat, repeat, no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
-  transition: --headline-overlay var(--t-state) var(--ease-state), --texture-veil 0.45s var(--ease-state);
+  /* Only the load-time veil fades. The state overlay (`--headline-overlay`) switches without a transition: a registered
+     custom property that is transitioned inside a `background-clip: text` fill repaints the clipped text on every
+     frame, which made the headline vibrate in Safari while the state changed (confirmed with the hnoov test: with this
+     transition off the headline stays still). The eyebrow, accent line and logo colours still fade as before. */
+  transition: --texture-veil 0.45s var(--ease-state);
 }
 
 .hero__line--accent {
@@ -398,12 +402,15 @@ a {
 .banner {
   position: absolute;
   z-index: 2;
-  /* Centred with the same `left: 50%` + `translateX(-50%)` at every screen size (desktop only adds the vertical lift), so
-     crossing a breakpoint while the window is resized never changes the horizontal position: the `transform`
-     transition below has no horizontal component to animate. The entrance only animates the vertical `translate`. */
-  left: 50%;
+  /* Centred without any horizontal `transform` at every screen size (auto margins), so nothing horizontal can ever be
+     animated or transitioned: not by the entrance (Safari used to slide the card in from the right when its centring
+     `translateX(-50%)` was transitioned/animated on first paint), and not when a resize crosses a breakpoint. The only
+     `transform` left is the vertical lift (`--panel-shift`, 40px on desktop in the active state). */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   bottom: 72px; /* 56px video tab + 16px gap (Figma mobile) */
-  transform: translateX(-50%);
+  transform: translateY(calc(var(--panel-shift) * -1));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1176,7 +1183,6 @@ a {
 
   .banner {
     bottom: 37px; /* Figma: panel top at y 679 (default) / 639 (active) in the 834px frame; the lift is a transform */
-    transform: translateX(-50%) translateY(calc(var(--panel-shift) * -1));
     flex-direction: row;
     gap: 32px;
     width: max-content;
@@ -1286,9 +1292,32 @@ a {
   animation: enter-from-bottom var(--t-lift) var(--ease-lift) 0.15s backwards;
 }
 
+/* Staggered, not simultaneous: headline 0s, card 0.15s, logo 0.55s, video tab 0.9s (desktop: in from the right edge,
+   a one-off Web Animation started by VideoTab.astro, not a CSS animation, so no style change can ever restart it;
+   phones/tablets: with the card, see the video tab rules above). Each runs once. */
+/* desktop video tab: hidden (not moved: `translate` is transitioned) until its one-off slide-in takes over */
+:root[data-tab-intro='pending'] .video-tab {
+  visibility: hidden;
+}
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* the logo box is laid out from the first frame (only its opacity animates): no layout shift */
+  .logo {
+    animation: enter-fade 0.9s var(--ease-state) 0.55s backwards;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero__title,
-  .banner {
+  .banner,
+  .logo {
     animation: none;
   }
   .video-tab {

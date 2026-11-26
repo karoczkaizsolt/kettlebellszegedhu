@@ -12,13 +12,35 @@ import iconActive from '../assets/figma/icon-video-active.svg';
 </button>
 
 <script>
-  // The phone/tablet entrance of the tab (global.css) belongs to the first page load only. Once it has finished (or, when
-  // the page was opened at a desktop width and never played it, shortly after load) the page is marked
-  // `data-intro-done`, which switches the entrance rule off for good: resizing across the breakpoint cannot replay it.
+  // Entrance of the tab, once per page load, never restarted by anything:
+  // - phones/tablets: a CSS animation (global.css) gated by `data-intro-done`, set when it has finished;
+  // - desktop: a single Web Animation created here, once (this module script runs once per page load; it is not bound to
+  //   the cascade, so no class/state/resize/modal change and no Safari style recalculation can replay it). Until it
+  //   starts the tab is hidden by `data-tab-intro="pending"` (set before first paint in the head).
   const root = document.documentElement;
-  const done = () => root.setAttribute('data-intro-done', '');
-  document.querySelector('.video-tab')?.addEventListener('animationend', (event) => {
-    if ((event as AnimationEvent).animationName === 'enter-from-bottom') done();
+  const tab = document.querySelector<HTMLElement>('.video-tab');
+  const markDone = () => root.setAttribute('data-intro-done', '');
+
+  if (tab && root.getAttribute('data-tab-intro') === 'pending') {
+    const ease = getComputedStyle(root).getPropertyValue('--ease-lift').trim() || 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+    const intro = tab.animate(
+      [
+        { translate: 'calc(100% + 1px) 0', visibility: 'visible' },
+        { translate: '0 0', visibility: 'visible' },
+      ],
+      { duration: 1000, delay: 900, easing: ease, fill: 'both' },
+    );
+    intro.finished
+      .then(() => {
+        // same task: reveal-state removed, then the finished animation released, so no frame shows an intermediate state
+        root.removeAttribute('data-tab-intro');
+        intro.cancel();
+      })
+      .catch(() => root.removeAttribute('data-tab-intro'));
+  }
+
+  tab?.addEventListener('animationend', (event) => {
+    if ((event as AnimationEvent).animationName === 'enter-from-bottom') markDone();
   });
-  window.addEventListener('load', () => window.setTimeout(done, 2500), { once: true });
+  window.addEventListener('load', () => window.setTimeout(markDone, 2500), { once: true });
 </script>

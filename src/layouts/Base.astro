@@ -14,7 +14,8 @@ interface Props {
 }
 const { title, documentTitle = title, description } = Astro.props;
 const canonical = canonicalBase ? new URL('/', canonicalBase).href : undefined;
-const ogImage = assetBase ? `${assetBase.replace(/\/+$/, '')}/img/og-image.png` : withBase('/img/og-image.png');
+// Absolute whenever a host is known (production domain, or PUBLIC_SITE_URL on the demo); the base path is part of the path.
+const ogImage = `${assetBase ? assetBase.replace(/\/+$/, '') : ''}${withBase('/img/og-image.png')}`;
 const ogImageAlt = 'Az erő egy képesség. Szerezd meg! – kettlebell edzés Szegeden, StrongFirst';
 
 // Structured data: only what the page itself states (name from the site/domain, instructor, phone, e-mail, Szeged,
@@ -45,6 +46,20 @@ const stateAttr = { [PAGE_STATE_ATTRIBUTE]: PAGE_STATES.default };
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Desktop video tab entrance: marks the page "pending" before the first paint (the tab is hidden by CSS until its
+         one-off slide-in starts, see VideoTab.astro). Only for the desktop layout and when motion is allowed. The
+         timeout is a one-shot safety net: the tab can never stay hidden if the script below fails. -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        if (window.matchMedia('(min-width: 960px)').matches && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+          d.setAttribute('data-tab-intro', 'pending');
+          setTimeout(function () {
+            if (d.getAttribute('data-tab-intro') === 'pending') d.removeAttribute('data-tab-intro');
+          }, 4000);
+        }
+      })();
+    </script>
     <title>{documentTitle}</title>
     <meta name="description" content={description} />
     {!isProduction && <meta name="robots" content="noindex, nofollow" />}
