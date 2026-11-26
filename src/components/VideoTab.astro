@@ -10,3 +10,15 @@ import iconActive from '../assets/figma/icon-video-active.svg';
   </span>
   <span class="video-tab__label">Ismerd meg<br class="br-desktop" /> az edzéseket</span>
 </button>
+
+<script>
+  // The phone/tablet entrance of the tab (global.css) belongs to the first page load only. Once it has finished (or, when
+  // the page was opened at a desktop width and never played it, shortly after load) the page is marked
+  // `data-intro-done`, which switches the entrance rule off for good: resizing across the breakpoint cannot replay it.
+  const root = document.documentElement;
+  const done = () => root.setAttribute('data-intro-done', '');
+  document.querySelector('.video-tab')?.addEventListener('animationend', (event) => {
+    if ((event as AnimationEvent).animationName === 'enter-from-bottom') done();
+  });
+  window.addEventListener('load', () => window.setTimeout(done, 2500), { once: true });
+</script>

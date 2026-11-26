@@ -398,13 +398,12 @@ a {
 .banner {
   position: absolute;
   z-index: 2;
-  /* Centred without `transform` on phones/tablets: the entrance only ever animates the vertical `translate`, so no
-     horizontal offset can exist at any point (desktop restores left: 50% + translateX(-50%) below). */
-  left: 0;
-  right: 0;
-  margin-inline: auto;
-  bottom: 64px; /* 48px video tab + 16px gap (Figma mobile) */
-  transform: none;
+  /* Centred with the same `left: 50%` + `translateX(-50%)` at every screen size (desktop only adds the vertical lift), so
+     crossing a breakpoint while the window is resized never changes the horizontal position: the `transform`
+     transition below has no horizontal component to animate. The entrance only animates the vertical `translate`. */
+  left: 50%;
+  bottom: 72px; /* 56px video tab + 16px gap (Figma mobile) */
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -570,10 +569,28 @@ a {
      property, so it never interferes with the positioning `transform`). Phone: up from the bottom edge; desktop:
      in from the right. */
   --tab-nudge: 0 0;
-  /* Phones/tablets: enters together with the profile card (same keyframes, duration, easing and delay as `.banner`
-     further down), so the two cards move as one unit. No other motion. Desktop replaces it with the nudge. */
   --enter-distance: 40px;
-  animation: enter-from-bottom var(--t-lift) var(--ease-lift) 0.15s backwards;
+  animation: none;
+}
+/* Phones/tablets: the tab follows the Figma mobile video tab (330 x 56, padding 8px 16px, content at the top, rounded
+   top corners) and enters together with the profile card (same keyframes, duration, easing and delay as `.banner`), so
+   the two cards move as one unit. The entrance belongs to the first page load only: `data-intro-done` (set once by
+   VideoTab.astro) removes the rule, so resizing the window across the 960px breakpoint never replays it. */
+@media (max-width: 959.98px) {
+  .video-tab {
+    height: 56px;
+    padding: 8px 16px;
+    align-items: flex-start;
+  }
+  .video-tab__label {
+    line-height: calc(22px + var(--fs-boost)); /* Figma label line height; the 24px icon row stays centred on it */
+    margin-block: 1px;
+  }
+}
+@media (max-width: 959.98px) and (prefers-reduced-motion: no-preference) {
+  :root:not([data-intro-done]) .video-tab {
+    animation: enter-from-bottom var(--t-lift) var(--ease-lift) 0.15s backwards;
+  }
 }
 /* the phone/tablet tab is anchored to the page, not the viewport */
 @media (max-width: 959.98px) {
@@ -1158,9 +1175,6 @@ a {
   .tag:nth-child(8) { grid-column: 2; grid-row: 4; justify-self: start; --i: 7; } /* fogáserő */
 
   .banner {
-    left: 50%;
-    right: auto;
-    margin-inline: 0;
     bottom: 37px; /* Figma: panel top at y 679 (default) / 639 (active) in the 834px frame; the lift is a transform */
     transform: translateX(-50%) translateY(calc(var(--panel-shift) * -1));
     flex-direction: row;
